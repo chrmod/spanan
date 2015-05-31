@@ -1,0 +1,28 @@
+{
+  "name": "spanan",
+  "main": "spanan.js",
+  "version": "0.0.1",
+  "authors": [
+    "chrmod <krzysztof.modras@gmail.com>"
+  ],
+  "description": "Cross iframe communication made simple",
+  "moduleType": [
+    "globals"
+  ],
+  "license": "CC",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "harmony-reflect": "git://github.com/tvcutsem/harmony-reflect.git#~1.1.1"
+  },
+  "devDependencies": {
+    "mocha": "~2.1.0",
+    "chai": "~2.1.0"
+  }
+}

@@ -1,61 +1,79 @@
 # Spanan
-Spanan is a JavaScript library that simplify cross iframe communication. It
-wraps `window.postMessage` (overcomimg some of its limitations) to create
-remote procedure call (RPC) mechanism between html documents.
 
-With Spanan, JavaScript application can expose their API or consume other
-applications API. Core concept here is that document can export some functions,
-so other document can import them.
+Spanan is a JavaScript library that simplify cross **iframe** communication.
 
-On consuming side (client api) all method calls return a promise object that
-will be resolved by serving side (server api). In this way serving side which
-is JavaScript application on a foreign domain, can be considered as an agent
-that will return a value whenever it is willing to.
+With Spanan, Javascript applications can expose their functions for other
+applications to use. Core concept here is that two apps should be able to
+communicatie via API in **client-to-client** fashion.
 
-Spanan is a building block for new kind of web applications that share their
-business logic across multiple async agents, that communicate with each other
-to achieve more ambitious goals.
+In order to establish communication we need two applications - one that will
+**export** functions to use (called "server") and one that will **import** them
+(called "client"). Both of them can be separate application, hosted on
+different domains.
 
-# Example
+Spanan is meant as a building block for new kind of web applications that share
+their business logic. Until now exposing API was server-to-server or
+client-to-server concept, but we believe that client-to-client is as much
+important.
 
-Lets build a simple TODO application that will be accessible from any website.
+Important: at current stage your are using Spanan in production on your own
+risk.
 
-## Server API
+# Usage
 
-Serving side define a list of methods that will be available on the client.
+First, Server need to expose some API. After loading Spanan library all you
+need to do is listing of functions you want to export:
+
 
 ```js
-// running at URL http://my-todo-service.com/
+
+// running at URL http://my-local-storage.com/
 spanan.export({
-  all: function () {
-    return JSON.parse(localStorage.getItem('todos')) || [];
+  get: function (key) {
+    return localStorage.getItem(key);
   },
 
-  add: function (todo) {
-    var todos = this.all();
-    todos.push(todo);
-    localStorage.setItem('todos', JSON.stringify(todos));
+  set: function (key, value) {
+    localStorage.setItem(key, value);
   }
 });
 ```
-That's it. Now lets see how we can interact with our TODO app.
 
-## Client API
+On client side you need to inform Spanan from where it should import functions:
 
 ```js
-// running anywhere in the browser
-var todoService = spanan.import("http://my-todo-service.stub/");
+var myLocalStorage = spanan.import("http://my-local-storage.com/");
+```
 
-todoService.all().then(function (todos) {
-  console.log(todos); // => []
-}).then(function () {
-  return todoService.add('test spanan');
-}).then(function () {
-  return todoService.all();
-  }).then(function (todos) {
-  console.log(todos); // => ['test spanan']
+Under the hood Spanan will create invisible iframe and grant access to it via
+internal API.
+
+After that you will be able to access exported functions:
+
+```js
+myLocalStorage.get('test');
+```
+
+Returned values are promises that will be resolved after server finish calling
+them. Because of that you are able to chain requests such as this:
+
+```js
+myLocalStorage.set('test', 'spanan is cool').then(function () {
+  return todoService.get('test');
+}).then(function (value) {
+  console.log(value); // => 'spanan is cool'
 });
 ```
+
+# How it works?
+
+Under the hood Spanan wraps `window.postMessage` (overcomimg some of its
+limitations) to create remote procedure call (RPC) mechanism between html
+documents. Each method invocation on client side generate a postMessage call to
+given iframe and return a promise object. At the server side the message is
+received and a given method is called. If it return a promise the promise, its
+resolution will trigger resolution of client side promise. If it returns
+a value, the client promise will be resolved with that value.
 
 # Future
 
@@ -71,7 +89,8 @@ In your html document add:
 <script src="path/to/yourCopyOf/spanan.js"></script>
 ```
 
-it will provide both server and client API, as your apps very often will do both.
+it will provide both server and client API, as your apps very often will do
+both.
 
 # Reasons behind Spanan
 

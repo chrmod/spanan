@@ -1,0 +1,6 @@
+launch_in_dev:
+- Firefox
+test_page: tests/index.html
+src_files:
+- spanan.js
+- tests/tests.js

@@ -1,0 +1,15 @@
+{
+  "name": "harmony-reflect",
+  "homepage": "https://github.com/tvcutsem/harmony-reflect",
+  "version": "1.1.1",
+  "_release": "1.1.1",
+  "_resolution": {
+    "type": "version",
+    "tag": "v1.1.1",
+    "commit": "e7cfa98083746e66f04e7a804ab1584cb65ea3ca"
+  },
+  "_source": "git://github.com/tvcutsem/harmony-reflect.git",
+  "_target": "~1.1.1",
+  "_originalSource": "git://github.com/tvcutsem/harmony-reflect.git",
+  "_direct": true
+}
