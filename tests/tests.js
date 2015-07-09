@@ -36,7 +36,7 @@ describe("SpananProtocol", function () {
   });
 });
 
-describe("spanan.import", function () {
+describe("spanan.createIframe", function () {
   var iframeURL = "./fixtures/basic.html";
 
   afterEach(function () {
@@ -48,12 +48,11 @@ describe("spanan.import", function () {
     return document.querySelector("iframe.spanan");
   }
 
-  function subject(options) {
-    return spanan.import(iframeURL, options);
+  function subject() {
+    return spanan.createIframe(iframeURL);
   }
 
   describe("creates iframe", function () {
-
     it("add it to DOM", function () {
       function iframeCount() {
         return document.querySelectorAll("iframe").length;
@@ -70,15 +69,31 @@ describe("spanan.import", function () {
     });
 
     it("gives it proper src attribute", function () {
-      subject();
-      expect(spananIframe().getAttribute("src")).to.eql(iframeURL);
+      expect(subject().getAttribute("src")).to.eql(iframeURL);
     });
 
     it("gives it 'display: none' style attribute", function () {
-      subject();
-      expect(spananIframe().style.display).to.eql("none");
+      expect(subject().style.display).to.eql("none");
     });
   });
+
+});
+
+describe("spanan.import", function () {
+  var iframeURL = "./fixtures/basic.html";
+
+  afterEach(function () {
+    var iframe = spananIframe();
+    document.body.removeChild(iframe);
+  });
+
+  function spananIframe() {
+    return document.querySelector("iframe.spanan");
+  }
+
+  function subject(options) {
+    return spanan.import(iframeURL, options);
+  }
 
   describe("return proxy object", function () {
     it("has iframe as its property", function () {
