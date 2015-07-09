@@ -28,7 +28,8 @@
         },
         send: function (target, name) {
           return function () {
-            var args = arguments;
+            var methodCall = new SpananProtocol(name, arguments);
+
             return new Promise(function (resolve, reject) {
               var loadingCheckerInterval,
                   rejectTimeout = setTimeout(function () {
@@ -40,7 +41,7 @@
                 loadingCheckerInterval = global.setInterval(function () {
                   if(target.iframe.loaded) {
                     clearInterval(loadingCheckerInterval);
-                    target.iframe.contentWindow.postMessage(name+":"+args[0], "http://localhost:7357");
+                    target.iframe.contentWindow.postMessage(methodCall.toString(), "http://localhost:7357");
                     spanan.lastCallCb = function () {
                       clearTimeout(rejectTimeout);
                       resolve.apply(this,arguments);

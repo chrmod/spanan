@@ -1,10 +1,11 @@
 <!-- This stub document responds for one spanan method 'echo' -->
+<script src="../../src/protocol.js"></script>
 <script>
   window.addEventListener("message", function (e) {
-    var [name, arg] = e.data.split(":");
+    var methodCall = new SpananProtocol(e.data);
 
-    if(name === "echo"){
-      e.source.postMessage(arg, 'http://localhost:7357');
+    if(methodCall.methodName === "echo"){
+      e.source.postMessage(methodCall.argsToString(), 'http://localhost:7357');
     }
   }, false);
 </script>
