@@ -52,6 +52,5 @@
   },
   "_source": "git://github.com/mochajs/mocha.git",
   "_target": "~2.1.0",
-  "_originalSource": "mocha",
-  "_direct": true
+  "_originalSource": "mocha"
 }

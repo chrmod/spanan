@@ -1,0 +1,10 @@
+<!-- This stub document responds for one spanan method 'echo' -->
+<script>
+  window.addEventListener("message", function (e) {
+    var [name, arg] = e.data.split(":");
+
+    if(name === "echo"){
+      e.source.postMessage(arg, 'http://localhost:7357');
+    }
+  }, false);
+</script>

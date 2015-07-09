@@ -1,33 +1,67 @@
-var spanan = {
-  import: function (url) {
-    var iframe = document.createElement('iframe');
+(function (global) {
 
-    iframe.className = 'spanan';
+  function createIframe(url) {
+    var iframe = global.document.createElement("iframe");
+
+    iframe.className = "spanan";
     iframe.src = url;
-    iframe.style.display = 'none';
+    iframe.style.display = "none";
 
-    document.body.appendChild(iframe);
+    iframe.addEventListener("load", function () {
+      iframe.loaded = true;
+    });
 
-    var handler = {
-      get: function (target, name) {
-        return name in target ?
-          target[name] :
-          this.send(target, name);
-      },
-      send: function (target, name) {
-        return function () {
-          target.iframe.contentWindow.postMessage("test", "http://localhost");
-          return new Promise(function (resolve, reject) { });
-        };
-      }
-    };
+    global.document.body.appendChild(iframe);
 
-    var iframeWrapper = {
-      iframe: iframe
-    };
-
-    return new Proxy(iframeWrapper, handler);
+    return iframe;
   }
-};
 
-window.spanan = spanan;
+  global.spanan = {
+    import: function (url, options = {}) {
+      var spanan = this;
+
+      var handler = {
+        get: function (target, name) {
+          return name in target ?
+            target[name] :
+            this.send(target, name);
+        },
+        send: function (target, name) {
+          return function () {
+            var args = arguments;
+            return new Promise(function (resolve, reject) {
+              var loadingCheckerInterval,
+                  rejectTimeout = setTimeout(function () {
+                    clearInterval(loadingCheckerInterval);
+                    reject();
+                  }, options.timeout || 1000);
+
+              if (!target.iframe.loaded) {
+                loadingCheckerInterval = global.setInterval(function () {
+                  if(target.iframe.loaded) {
+                    clearInterval(loadingCheckerInterval);
+                    target.iframe.contentWindow.postMessage(name+":"+args[0], "http://localhost:7357");
+                    spanan.lastCallCb = function () {
+                      clearTimeout(rejectTimeout);
+                      resolve.apply(this,arguments);
+                    };
+                  }
+                }, 50);
+              }
+            });
+          };
+        }
+      };
+
+      var iframeWrapper = {
+        iframe: createIframe(url)
+      };
+
+      return new Proxy(iframeWrapper, handler);
+    }
+  };
+
+  global.addEventListener("message", function (e) {
+    global.spanan.lastCallCb(e.data);
+  });
+})(window);
