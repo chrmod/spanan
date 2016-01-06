@@ -79,6 +79,87 @@ describe("spanan.createIframe", function () {
 
 });
 
+describe("SpananWrapper", function () {
+  var target;
+
+  beforeEach(function () {
+    target = {};
+  });
+
+  function subject(otherTarget) {
+    return new spanan.SpananWrapper(otherTarget || target);
+  }
+
+  describe("constructor", function () {
+    it("sets `target` as property", function () {
+      expect(subject().target).to.eql(target);
+    });
+
+    it("sets contentWindow as a target if provided with iframe", function () {
+      var iframe = spanan.createIframe();
+      expect(subject(iframe).target).to.eql(iframe.contentWindow);
+
+      // cleanup
+      document.body.removeChild(iframe);
+    });
+  });
+
+  describe("#isReady", function () {
+    var iframeURL = "./fixtures/basic.html",
+        iframe;
+
+    afterEach(function () {
+      document.body.removeChild(iframe);
+    });
+
+    it("is false if iframe is not loaded", function () {
+      iframe = spanan.createIframe(iframeURL);
+      expect(subject(iframe).isReady).to.eql(false);
+    });
+
+    it("is true if iframe is loaded", function (done) {
+      iframe = spanan.createIframe(iframeURL);
+      var wrapper = subject(iframe);
+
+      setTimeout(function () {
+        expect(wrapper.isReady).to.eql(true);
+        done();
+      }, 200);
+    });
+  });
+
+  describe("#send", function () {
+    it("calls 'postMessage' on target", function (done) {
+      target.postMessage = function () {
+        done();
+      };
+      subject().send('test');
+    });
+
+    it("calls postMessage with SpananProtocol", function (done) {
+      var fnName = "test",
+          fnArgs = [1,2,3];
+
+      target.postMessage = function (msg) {
+        var serializedCall = new SpananProtocol(fnName, fnArgs);
+        expect(msg).to.eql(serializedCall.toString());
+        done();
+      };
+
+      subject().send(fnName, fnArgs);
+    });
+
+    it("calls postMessage with wildcard as targetOrigin", function (done) {
+      target.postMessage = function (msg, targetOrigin) {
+        if ( targetOrigin === "*" ) {
+          done();
+        }
+      };
+      subject().send('test');
+    });
+  });
+});
+
 describe("spanan.import", function () {
   var iframeURL = "./fixtures/basic.html";
 
@@ -96,12 +177,16 @@ describe("spanan.import", function () {
   }
 
   describe("return proxy object", function () {
-    it("has iframe as its property", function () {
-      expect(subject().iframe).to.eql(spananIframe());
+    it("inherits from SpananWrapper", function () {
+      var proxy = subject();
+      expect(proxy).to.be.instanceOf(spanan.SpananWrapper);
+    });
+
+    it("has iframe contentWindow as its 'target' property", function () {
+      expect(subject().target).to.eql(spananIframe().contentWindow);
     });
 
     it("convert function calls into postMessage calls on iframe", function (done) {
-      expect(1);
       var proxy = subject();
       spananIframe().contentWindow.postMessage = function () {
         done();

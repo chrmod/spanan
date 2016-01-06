@@ -1,9 +1,28 @@
 function spanan() {}
 
+spanan.SpananWrapper = function (target) {
+  this.isReady = false;
+
+  if ( target instanceof HTMLElement && target.nodeName === 'IFRAME' ) {
+    this.target = target.contentWindow;
+
+    target.addEventListener("load", function () {
+      this.isReady = true;
+    }.bind(this));
+  } else {
+    this.target = target;
+    this.isReady = true;
+  }
+};
+
+spanan.SpananWrapper.prototype.send = function (fnName, fnArgs) {
+  var serializedCall = new SpananProtocol(fnName, fnArgs);
+  this.target.postMessage(serializedCall.toString(), "*");
+};
+
 spanan.import = function (url, options = {}) {
-  var wrapper = {
-    iframe: spanan.createIframe(url)
-  };
+  var iframe = spanan.createIframe(url),
+      wrapper = new spanan.SpananWrapper(iframe);
 
   var handler = {
     get: function (target, name) {
@@ -14,7 +33,8 @@ spanan.import = function (url, options = {}) {
 
     send: function (name) {
       return function () {
-        var methodCall = new SpananProtocol(name, arguments);
+        var fnName = name,
+            fnArgs = arguments;
 
         return new Promise(function (resolve, reject) {
           var loadingCheckerInterval,
@@ -29,7 +49,8 @@ spanan.import = function (url, options = {}) {
             if(!wrapper.loaded) { return; }
             clearInterval(loadingCheckerInterval);
 
-            wrapper.iframe.contentWindow.postMessage(methodCall.toString(), "http://localhost:7357");
+            wrapper.send(fnName, fnArgs);
+
             wrapper.lastCallCb = function (...args) {
               clearTimeout(rejectTimeout);
               resolve.apply(null, args);
@@ -40,7 +61,7 @@ spanan.import = function (url, options = {}) {
     }
   };
 
-  wrapper.iframe.addEventListener("load", function () {
+  wrapper.target.addEventListener("load", function () {
     wrapper.loaded = true;
   });
 
