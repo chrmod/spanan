@@ -83,7 +83,9 @@ describe("SpananWrapper", function () {
   var target;
 
   beforeEach(function () {
-    target = {};
+    target = {
+      postMessage: function () {}
+    };
   });
 
   function subject(otherTarget) {
@@ -104,37 +106,37 @@ describe("SpananWrapper", function () {
     });
   });
 
-  describe("#isReady", function () {
+  describe("#ready", function () {
     var iframeURL = "./fixtures/basic.html",
         iframe;
 
     afterEach(function () {
-      document.body.removeChild(iframe);
+      if ( iframe ) {
+        document.body.removeChild(iframe);
+      }
     });
 
-    it("is false if iframe is not loaded", function () {
+    it("returns promise", function () {
+      expect(subject().ready()).to.be.instanceof(Promise);
+    });
+
+    it("does not resolve if iframe is not loaded", function () {
       iframe = spanan.createIframe(iframeURL);
-      expect(subject(iframe).isReady).to.eql(false);
+      expect(subject(iframe).ready()).to.not.be.fullfilled;
     });
 
-    it("is true if iframe is loaded", function (done) {
+    it("does resolve when iframe is loaded", function (done) {
       iframe = spanan.createIframe(iframeURL);
       var wrapper = subject(iframe);
 
       setTimeout(function () {
-        expect(wrapper.isReady).to.eql(true);
+        expect(wrapper.ready()).to.be.fullfilled;
         done();
       }, 200);
     });
   });
 
   describe("#send", function () {
-    it("calls 'postMessage' on target", function (done) {
-      target.postMessage = function () {
-        done();
-      };
-      subject().send('test');
-    });
 
     it("calls postMessage with SpananProtocol", function (done) {
       var fnName = "test",
@@ -149,13 +151,40 @@ describe("SpananWrapper", function () {
       subject().send(fnName, fnArgs);
     });
 
-    it("calls postMessage with wildcard as targetOrigin", function (done) {
-      target.postMessage = function (msg, targetOrigin) {
-        if ( targetOrigin === "*" ) {
+    it("returns promise", function () {
+      expect(subject().send('test')).to.be.instanceof(Promise);
+    });
+
+    context("target ready", function () {
+      it("calls 'postMessage' on target", function (done) {
+        target.postMessage = function () {
           done();
-        }
-      };
-      subject().send('test');
+        };
+        subject().send('test');
+      });
+
+      it("calls postMessage with wildcard as targetOrigin", function (done) {
+        target.postMessage = function (msg, targetOrigin) {
+          if ( targetOrigin === "*" ) {
+            done();
+          }
+        };
+        subject().send('test');
+      });
+    });
+
+    context("target not ready", function () {
+      it("does not call 'postMessage' on target", function () {
+        var called = false;
+
+        target.postMessage = function () {
+          called = true;
+        };
+
+        subject().send('test');
+
+        expect(called).to.eql(false);
+      });
     });
   });
 });
@@ -186,14 +215,6 @@ describe("spanan.import", function () {
       expect(subject().target).to.eql(spananIframe().contentWindow);
     });
 
-    it("convert function calls into postMessage calls on iframe", function (done) {
-      var proxy = subject();
-      spananIframe().contentWindow.postMessage = function () {
-        done();
-      };
-      proxy.nonExistingMethod();
-    });
-
     it("calls on proxy object properties return a promise", function () {
       var proxy = subject();
       expect(proxy.nonExistingMethod()).to.be.instanceof(Promise);
@@ -204,10 +225,63 @@ describe("spanan.import", function () {
       return expect(proxy.nonexistingmethod()).to.eventually.be.rejected;
     });
 
-    it("calls to 'echo' methods return promise resolved to passed value", function () {
-      var proxy = subject();
-      return expect(proxy.echo("test")).to.eventually.equal("test");
+    context("iframe loaded", function () {
+      var proxy;
+
+      beforeEach(function () {
+        proxy = subject();
+        return proxy.ready();
+      });
+
+      it("convert function calls into postMessage calls on iframe", function (done) {
+        spananIframe().contentWindow.postMessage = function () {
+          done();
+        };
+        proxy.nonExistingMethod();
+      });
+
+      it("calls to 'echo' methods return promise resolved to passed value", function () {
+        return expect(proxy.echo("test")).to.eventually.equal("test");
+      });
     });
   });
 
+});
+
+describe("spanan - incoming messages", function () {
+  afterEach(function () {
+    spanan.pendingMessages = [];
+  });
+
+  it("starts with empty pendingMessages list", function () {
+    expect(spanan.pendingMessages).to.have.length(0);
+  });
+
+  context("when listening", function () {
+    beforeEach(function () {
+      spanan.startListening();
+    });
+
+    afterEach(function () {
+      spanan.stopListening();
+    });
+
+    it("puts incoming message into queue", function (done) {
+      window.postMessage("test", "*");
+      setTimeout(function () {
+        expect(spanan.pendingMessages).to.have.length(1);
+        done();
+      }, 200);
+    });
+  });
+
+  context("when not listening", function () {
+    it("does not puts incoming message into queue", function (done) {
+      window.postMessage("test", "*");
+      setTimeout(function () {
+        expect(spanan.pendingMessages).to.have.length(0);
+        done();
+      }, 200);
+    });
+  });
 });

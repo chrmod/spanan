@@ -1,23 +1,57 @@
-function spanan() {}
+var spanan = {
+  pendingMessages: [],
+  messageListener(e) {
+    this.pendingMessages.push(e);
+  },
+  startListening() {
+    this.messageListener = this.messageListener.bind(this);
+    window.addEventListener("message", this.messageListener);
+  },
+  stopListening() {
+    window.removeEventListener("message", this.messageListener);
+  }
+};
 
 spanan.SpananWrapper = function (target) {
-  this.isReady = false;
-
   if ( target instanceof HTMLElement && target.nodeName === 'IFRAME' ) {
+    this.iframe = target;
     this.target = target.contentWindow;
-
-    target.addEventListener("load", function () {
-      this.isReady = true;
-    }.bind(this));
   } else {
     this.target = target;
-    this.isReady = true;
   }
+
+  this.ready(); // Sets load listener ASAP
 };
 
 spanan.SpananWrapper.prototype.send = function (fnName, fnArgs) {
   var serializedCall = new SpananProtocol(fnName, fnArgs);
-  this.target.postMessage(serializedCall.toString(), "*");
+
+  return this.ready().then(function () {
+    this.target.postMessage(serializedCall.toString(), "*");
+  }.bind(this));
+};
+
+// TODO: need a solid way to determine if iframe is loaded
+spanan.SpananWrapper.prototype.ready = function () {
+  if (this._isLoaded) {
+    return Promise.resolve();
+  } else {
+    return new Promise(function (resolve, reject) {
+      setTimeout(function () {
+        resolve();
+        this._isLoaded = true;
+      }.bind(this), 200);
+      /*
+      if ( this.iframe ) {
+        this.iframe.addEventListener("load", resolve);
+        this._isLoaded = true;
+      } else {
+        this._isLoaded = true;
+        resolve();
+      }
+      */
+    }.bind(this));
+  }
 };
 
 spanan.import = function (url, options = {}) {
@@ -37,33 +71,24 @@ spanan.import = function (url, options = {}) {
             fnArgs = arguments;
 
         return new Promise(function (resolve, reject) {
-          var loadingCheckerInterval,
-              rejectTimeout;
+          var rejectTimeout;
 
           rejectTimeout = setTimeout(function () {
-            clearInterval(loadingCheckerInterval);
             reject();
           }, options.timeout || 1000);
 
-          loadingCheckerInterval = setInterval(function () {
-            if(!wrapper.loaded) { return; }
-            clearInterval(loadingCheckerInterval);
-
+          wrapper.ready().then(function () {
             wrapper.send(fnName, fnArgs);
 
             wrapper.lastCallCb = function (...args) {
               clearTimeout(rejectTimeout);
               resolve.apply(null, args);
             };
-          }, 50);
+          });
         });
       };
     }
   };
-
-  wrapper.target.addEventListener("load", function () {
-    wrapper.loaded = true;
-  });
 
   window.addEventListener("message", function (e) {
     wrapper.lastCallCb && wrapper.lastCallCb(e.data);
