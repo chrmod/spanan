@@ -1,0 +1,12 @@
+{
+  "framework": "mocha",
+  "launch_in_dev": [
+    "Firefox"
+  ],
+  "test_page": "tests/index.mustache",
+  "on_start": "babel src --out-dir tmp",
+  "on_exit": "rm -rf tmp",
+  "src_files": [
+    "tmp/**/*-test.js"
+  ]
+}

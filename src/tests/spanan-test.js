@@ -1,40 +1,7 @@
+import spanan from '../spanan';
+import Transfer from '../transfer';
+
 var expect = chai.expect;
-
-describe("SpananProtocol", function () {
-  it("constructs from methodName and methodArgs", function () {
-    var methodCall = new SpananProtocol("test", [1,2,3]);
-    expect(methodCall.methodName).to.equal("test");
-    expect(methodCall.methodArgs).to.eql(["1","2","3"]);
-  });
-
-  it("constructs from serialized string", function () {
-    var methodCall = new SpananProtocol("test:1:2:3");
-    expect(methodCall.methodName).to.equal("test");
-    expect(methodCall.methodArgs).to.eql(["1","2","3"]);
-  });
-
-  it("constructs with methodArgs being function arguments", function () {
-    (function () {
-      var methodCall = new SpananProtocol("test", arguments);
-      expect(methodCall.methodName).to.equal("test");
-      expect(methodCall.methodArgs).to.eql(["1","2","3"]);
-    })(1,2,3);
-  });
-
-  describe("#toString", function () {
-    it("serializes method call", function () {
-      var methodCall = new SpananProtocol("test", [1,2,3])
-      expect(methodCall.toString()).to.equal("test:1:2:3");
-    });
-  });
-
-  describe("#argsToString", function () {
-    it("serializes method call", function () {
-      var methodCall = new SpananProtocol("test", [1,2,3])
-      expect(methodCall.argsToString()).to.equal("1:2:3");
-    });
-  });
-});
 
 describe("spanan.createIframe", function () {
   var iframeURL = "./fixtures/basic.html";
@@ -138,12 +105,12 @@ describe("SpananWrapper", function () {
 
   describe("#send", function () {
 
-    it("calls postMessage with SpananProtocol", function (done) {
+    it("calls postMessage with Transfer", function (done) {
       var fnName = "test",
           fnArgs = [1,2,3];
 
       target.postMessage = function (msg) {
-        var serializedCall = new SpananProtocol(fnName, fnArgs);
+        var serializedCall = new Transfer(fnName, fnArgs);
         expect(msg).to.eql(serializedCall.toString());
         done();
       };

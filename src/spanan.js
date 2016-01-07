@@ -1,3 +1,5 @@
+import Transfer from './transfer';
+
 var spanan = {
   pendingMessages: [],
   messageListener(e) {
@@ -24,7 +26,7 @@ spanan.SpananWrapper = function (target) {
 };
 
 spanan.SpananWrapper.prototype.send = function (fnName, fnArgs) {
-  var serializedCall = new SpananProtocol(fnName, fnArgs);
+  var serializedCall = new Transfer(fnName, fnArgs);
 
   return this.ready().then(function () {
     this.target.postMessage(serializedCall.toString(), "*");
@@ -108,3 +110,5 @@ spanan.createIframe = function(url) {
 
   return iframe;
 }
+
+export default spanan;
