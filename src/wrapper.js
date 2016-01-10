@@ -2,6 +2,9 @@ import Transfer from "./transfer";
 
 export default class {
   constructor(target) {
+    this._isLoaded = false;
+    this._callbacks = Object.create(null);
+
     if ( target instanceof HTMLElement && target.nodeName === "IFRAME" ) {
       this.iframe = target;
       this.target = target.contentWindow;
@@ -13,11 +16,18 @@ export default class {
   }
 
   send(fnName, fnArgs) {
-    var serializedCall = new Transfer(fnName, fnArgs);
+    var transfer = new Transfer(fnName, fnArgs),
+        target = this.target,
+        callbacks = this._callbacks;
 
     return this.ready().then(function () {
-      this.target.postMessage(serializedCall.toString(), "*");
-    }.bind(this));
+
+      target.postMessage(transfer.toString(), "*");
+
+      return new Promise(function (resolve) {
+        callbacks[transfer.id] = resolve;
+      });
+    });
   }
 
   // TODO: need a solid way to determine if iframe is loaded

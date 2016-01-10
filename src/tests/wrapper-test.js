@@ -8,7 +8,7 @@ import spanan from "../spanan";
 var expect = chai.expect;
 
 describe("Wrapper", function () {
-  var target;
+  var target, _subject;
 
   beforeEach(function () {
     target = {
@@ -16,8 +16,13 @@ describe("Wrapper", function () {
     };
   });
 
+  afterEach(function () {
+    _subject = undefined;
+  });
+
   function subject(otherTarget) {
-    return new Wrapper(otherTarget || target);
+    _subject = _subject || new Wrapper(otherTarget || target);
+    return _subject;
   }
 
   describe("#constructor", function () {
@@ -98,6 +103,14 @@ describe("Wrapper", function () {
           }
         };
         subject().send("test");
+      });
+
+      it("subscribe callback on its callback list", function (done) {
+        subject().send("test")
+        setTimeout(function () {
+          expect(Object.keys(subject()._callbacks)).to.have.length(1);
+          done();
+        }, 240);
       });
     });
 

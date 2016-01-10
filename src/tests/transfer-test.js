@@ -27,7 +27,23 @@ describe("Transfer", function () {
       expect(methodCall.methodName).to.equal("test");
       expect(methodCall.methodArgs).to.eql(["1","2","3"]);
     });
+
+    it("sets id bigger than last transfer id", function () {
+      Transfer._nextId = 3;
+
+      expect(new Transfer("test", []).id).to.eql(4);
+      expect(new Transfer("test", []).id).to.eql(5);
+    });
   });
+
+  describe(".nextId", function () {
+    it("returns autoincremented number", function () {
+      Transfer._nextId = 0;
+
+      expect(Transfer.nextId()).to.eql(1);
+      expect(Transfer.nextId()).to.eql(2);
+    });
+  })
 
   describe("#toString", function () {
     it("serializes method call", function () {

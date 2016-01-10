@@ -1,4 +1,4 @@
-export default class {
+class Transfer {
 
   constructor(methodName, methodArgs = []) {
     if(methodName.indexOf(":") > -1) {
@@ -7,6 +7,7 @@ export default class {
       this.methodName = methodName;
       this.methodArgs = Array.prototype.map.call(methodArgs, String);
     }
+    this.id = Transfer.nextId();
   }
 
   toString() {
@@ -17,4 +18,12 @@ export default class {
     return this.methodArgs.join(":");
   }
 
+  static nextId() {
+    Transfer._nextId = Transfer._nextId || 0;
+    Transfer._nextId += 1;
+    return Transfer._nextId;
+  }
+
 }
+
+export default Transfer;
