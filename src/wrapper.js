@@ -1,8 +1,8 @@
-import Transfer from './transfer';
+import Transfer from "./transfer";
 
 export default class {
   constructor(target) {
-    if ( target instanceof HTMLElement && target.nodeName === 'IFRAME' ) {
+    if ( target instanceof HTMLElement && target.nodeName === "IFRAME" ) {
       this.iframe = target;
       this.target = target.contentWindow;
     } else {
@@ -25,7 +25,7 @@ export default class {
     if (this._isLoaded) {
       return Promise.resolve();
     } else {
-      return new Promise(function (resolve, reject) {
+      return new Promise(function (resolve) {
         setTimeout(function () {
           resolve();
           this._isLoaded = true;
@@ -42,4 +42,4 @@ export default class {
       }.bind(this));
     }
   }
-};
+}

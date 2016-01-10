@@ -17,4 +17,4 @@ export default class {
     return this.methodArgs.join(":");
   }
 
-};
+}

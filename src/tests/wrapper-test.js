@@ -1,6 +1,9 @@
-import Wrapper from '../wrapper';
-import Transfer from '../transfer';
-import spanan from '../spanan';
+/*eslint-env mocha */
+/*global chai */
+
+import Wrapper from "../wrapper";
+import Transfer from "../transfer";
+import spanan from "../spanan";
 
 var expect = chai.expect;
 
@@ -77,7 +80,7 @@ describe("Wrapper", function () {
     });
 
     it("returns promise", function () {
-      expect(subject().send('test')).to.be.instanceof(Promise);
+      expect(subject().send("test")).to.be.instanceof(Promise);
     });
 
     context("target ready", function () {
@@ -85,7 +88,7 @@ describe("Wrapper", function () {
         target.postMessage = function () {
           done();
         };
-        subject().send('test');
+        subject().send("test");
       });
 
       it("calls postMessage with wildcard as targetOrigin", function (done) {
@@ -94,7 +97,7 @@ describe("Wrapper", function () {
             done();
           }
         };
-        subject().send('test');
+        subject().send("test");
       });
     });
 
@@ -106,7 +109,7 @@ describe("Wrapper", function () {
           called = true;
         };
 
-        subject().send('test');
+        subject().send("test");
 
         expect(called).to.eql(false);
       });

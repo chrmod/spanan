@@ -1,4 +1,7 @@
-import Transfer from '../transfer';
+/*eslint-env mocha */
+/*global chai */
+
+import Transfer from "../transfer";
 
 var expect = chai.expect;
 
@@ -28,14 +31,14 @@ describe("Transfer", function () {
 
   describe("#toString", function () {
     it("serializes method call", function () {
-      var methodCall = new Transfer("test", [1,2,3])
+      var methodCall = new Transfer("test", [1,2,3]);
       expect(methodCall.toString()).to.equal("test:1:2:3");
     });
   });
 
   describe("#argsToString", function () {
     it("serializes method call", function () {
-      var methodCall = new Transfer("test", [1,2,3])
+      var methodCall = new Transfer("test", [1,2,3]);
       expect(methodCall.argsToString()).to.equal("1:2:3");
     });
   });

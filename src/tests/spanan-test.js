@@ -1,5 +1,8 @@
-import spanan from '../spanan';
-import Wrapper from '../wrapper';
+/*eslint-env mocha */
+/*global chai */
+
+import spanan from "../spanan";
+import Wrapper from "../wrapper";
 
 var expect = chai.expect;
 
@@ -26,7 +29,7 @@ describe("spanan", function () {
         function iframeCount() {
           return document.querySelectorAll("iframe").length;
         }
-        var startingIframeCount = iframeCount()
+        var startingIframeCount = iframeCount();
         subject();
         expect(iframeCount() - startingIframeCount).to.eql(1);
       });
@@ -107,7 +110,7 @@ describe("spanan", function () {
 
   });
 
-  describe("spanan - incoming messages", function () {
+  describe("incoming messages", function () {
     afterEach(function () {
       spanan.pendingMessages = [];
     });
