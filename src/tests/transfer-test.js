@@ -43,7 +43,7 @@ describe("Transfer", function () {
       expect(Transfer.nextId()).to.eql(1);
       expect(Transfer.nextId()).to.eql(2);
     });
-  })
+  });
 
   describe("#toString", function () {
     it("serializes method call", function () {

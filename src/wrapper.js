@@ -1,9 +1,10 @@
 import Transfer from "./transfer";
 
 export default class {
-  constructor(target) {
+  constructor(target, options = {}) {
     this._isLoaded = false;
     this._callbacks = Object.create(null);
+    this.timeout = options.timeout || 1000;
 
     if ( target instanceof HTMLElement && target.nodeName === "IFRAME" ) {
       this.iframe = target;
@@ -17,17 +18,24 @@ export default class {
 
   send(fnName, fnArgs) {
     var transfer = new Transfer(fnName, fnArgs),
-        target = this.target,
-        callbacks = this._callbacks;
+        promise;
 
-    return this.ready().then(function () {
+    promise = new Promise(function (resolve, reject) {
+      var rejectTimeout = setTimeout(reject, this.timeout);
 
-      target.postMessage(transfer.toString(), "*");
+      this.ready().then(function () {
+        this.target.postMessage(transfer.toString(), "*");
 
-      return new Promise(function (resolve) {
-        callbacks[transfer.id] = resolve;
-      });
-    });
+        this._callbacks[transfer.id] = function () {
+          clearTimeout(rejectTimeout);
+          resolve.apply(null, arguments);
+        };
+      }.bind(this));
+    }.bind(this));
+
+    promise.transferId = transfer.id;
+
+    return promise;
   }
 
   // TODO: need a solid way to determine if iframe is loaded

@@ -37,6 +37,15 @@ describe("Wrapper", function () {
       // cleanup
       document.body.removeChild(iframe);
     });
+
+    it("has default timeout - 1000ms", function () {
+      expect(subject()).to.have.property("timeout", 1000);
+    });
+
+    it("accepts timeout from options", function () {
+      var wrapper = new Wrapper({}, { timeout: 400 });
+      expect(wrapper).to.have.property("timeout", 400);
+    });
   });
 
   describe("#ready", function () {
@@ -88,6 +97,11 @@ describe("Wrapper", function () {
       expect(subject().send("test")).to.be.instanceof(Promise);
     });
 
+    it("promise get rejected after timeout", function () {
+      var wrapper = new Wrapper(target, { timeout: 0 });
+      return expect(wrapper.send("test")).to.eventually.be.rejected;
+    });
+
     context("target ready", function () {
       it("calls 'postMessage' on target", function (done) {
         target.postMessage = function () {
@@ -106,7 +120,7 @@ describe("Wrapper", function () {
       });
 
       it("subscribe callback on its callback list", function (done) {
-        subject().send("test")
+        subject().send("test");
         setTimeout(function () {
           expect(Object.keys(subject()._callbacks)).to.have.length(1);
           done();

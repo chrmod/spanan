@@ -63,8 +63,8 @@ describe("spanan", function () {
       return document.querySelector("iframe.spanan");
     }
 
-    function subject(options) {
-      return spanan.import(iframeURL, options);
+    function subject() {
+      return spanan.import(iframeURL);
     }
 
     describe("return proxy object", function () {
@@ -83,7 +83,7 @@ describe("spanan", function () {
       });
 
       it("calls to undefined methods return rejected promise", function () {
-        var proxy = subject({timeout: 50});
+        var proxy = subject();
         return expect(proxy.nonexistingmethod()).to.eventually.be.rejected;
       });
 
@@ -102,8 +102,17 @@ describe("spanan", function () {
           proxy.nonExistingMethod();
         });
 
-        it("calls to 'echo' methods return promise resolved to passed value", function () {
-          return expect(proxy.echo("test")).to.eventually.equal("test");
+        it("calls to 'echo' methods return promise resolved to passed value", function (done) {
+          var promise = proxy.echo("test");
+
+          promise.then(function (response) {
+            expect(response).to.equal("test");
+            done();
+          });
+
+          setTimeout(function () {
+            proxy._callbacks[promise.transferId]("test");
+          }, 250);
         });
       });
     });

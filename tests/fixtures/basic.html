@@ -1,11 +1,15 @@
 <!-- This stub document responds for one spanan method 'echo' -->
-<script src="../../src/protocol.js"></script>
+<script src="/bower_components/requirejs/require.js"></script>
 <script>
-  window.addEventListener("message", function (e) {
-    var methodCall = new SpananProtocol(e.data);
+  require(['../../tmp/transfer.js'], function (modules) {
+    var Tranfer = modules.default;
 
-    if(methodCall.methodName === "echo"){
-      e.source.postMessage(methodCall.argsToString(), 'http://localhost:7357');
-    }
-  }, false);
+    window.addEventListener("message", function (e) {
+      var methodCall = new Tranfer(e.data);
+
+      if(methodCall.methodName === "echo"){
+        e.source.postMessage(methodCall.argsToString(), 'http://localhost:7357');
+      }
+    }, false);
+  });
 </script>
