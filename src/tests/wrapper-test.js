@@ -103,6 +103,10 @@ describe("Wrapper", function () {
     });
 
     context("target ready", function () {
+      beforeEach(function () {
+        return subject().ready();
+      });
+
       it("calls 'postMessage' on target", function (done) {
         target.postMessage = function () {
           done();
@@ -125,6 +129,16 @@ describe("Wrapper", function () {
           expect(Object.keys(subject()._callbacks)).to.have.length(1);
           done();
         }, 240);
+      });
+
+      it("promise get resolved after callback being called", function (done) {
+        var promise = subject().send("test");
+
+        promise.then(done);
+
+        setTimeout(function () {
+          subject()._callbacks[promise.transferId]();
+        }, 10);
       });
     });
 
