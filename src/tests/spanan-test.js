@@ -9,11 +9,6 @@ var expect = chai.expect;
 describe("Spanan", function () {
 
   describe("#constructor", () => {
-    it("sets empty array of pendingMessages", () => {
-      const spanan = new Spanan();
-      expect(spanan).to.have.property("pendingMessages").that.deep.equals([]);
-    });
-
     it("sets empty wrappers dict", () => {
       const spanan = new Spanan();
       expect(spanan).to.have.property("wrappers").that.deep.equal(new Map());
@@ -156,15 +151,8 @@ describe("Spanan", function () {
       spanan = new Spanan();
     });
 
-    afterEach(function () {
-      spanan.pendingMessages = [];
-    });
-
-    it("starts with empty pendingMessages list", function () {
-      expect(spanan.pendingMessages).to.have.length(0);
-    });
-
     context("when listening", function () {
+
       beforeEach(function () {
         spanan.startListening();
       });
@@ -173,23 +161,70 @@ describe("Spanan", function () {
         spanan.stopListening();
       });
 
-      it("puts incoming message into queue", function (done) {
+      it("calls dispatchMessage", function (done) {
+        spanan.dispatchMessage = () => done();
         window.postMessage("test", "*");
-        setTimeout(function () {
-          expect(spanan.pendingMessages).to.have.length(1);
-          done();
-        }, 200);
       });
+
     });
 
     context("when not listening", function () {
+
       it("does not puts incoming message into queue", function (done) {
+        spanan.dispatchMessage = () => done(new Error("should not happen"));
         window.postMessage("test", "*");
-        setTimeout(function () {
-          expect(spanan.pendingMessages).to.have.length(0);
-          done();
-        }, 200);
+        setTimeout(done, 200);
       });
+
     });
+  });
+
+  describe("#dispatchMessage", () => {
+    let spanan;
+
+    beforeEach(() => {
+      spanan = new Spanan();
+    });
+
+    context("on spanan response", function () {
+      let wrapper, cb;
+
+      beforeEach(() => {
+        cb = () => {};
+        wrapper = { id: 1, dispatchMessage: () => cb() };
+        spanan.registerWrapper(wrapper);
+      });
+
+      it("passes message to it's wrapper", done => {
+        cb = done;
+        spanan.dispatchMessage({
+          data: `{ "wrapperId": ${wrapper.id} }`
+        });
+      });
+
+      it("returns true", () => {
+        expect(spanan.dispatchMessage({
+          data: `{ "wrapperId": ${wrapper.id} }`
+        })).to.equal(true);
+      });
+
+      it("returns false on message with invalid wrapperId", () => {
+        expect(spanan.dispatchMessage({
+          data: '{ "wrapperId": 111 }'
+        })).to.equal(false);
+      });
+
+    });
+
+    context("on non spanan message", () => {
+
+      it("returns false if message was invalid", () => {
+        expect(
+          spanan.dispatchMessage({ data: 'testmessage' })
+        ).to.equal(false);
+      });
+
+    });
+
   });
 });

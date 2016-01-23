@@ -2,7 +2,6 @@ import Wrapper from "./wrapper";
 
 export default class Spanan {
   constructor() {
-    this.pendingMessages = [];
     this.wrappers = new Map();
     this.messageListener = this.messageListener.bind(this);
   }
@@ -11,8 +10,27 @@ export default class Spanan {
     this.wrappers.set(wrapper.id, wrapper);
   }
 
-  messageListener(e) {
-    this.pendingMessages.push(e);
+  dispatchMessage(ev) {
+    let msg, wrapper;
+
+    try {
+      msg = JSON.parse(ev.data);
+    } catch (e) {
+      return false;
+    }
+
+    wrapper = this.wrappers.get(msg.wrapperId);
+
+    if (wrapper) {
+      wrapper.dispatchMessage(msg);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  messageListener(ev) {
+    this.dispatchMessage(ev);
   }
 
   startListening() {
