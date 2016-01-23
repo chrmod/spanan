@@ -46,6 +46,10 @@ describe("Wrapper", function () {
       var wrapper = new Wrapper({}, { timeout: 400 });
       expect(wrapper).to.have.property("timeout", 400);
     });
+
+    it("sets own id", function () {
+      expect(subject()).to.have.any.key("id");
+    });
   });
 
   describe("#ready", () => {
@@ -68,7 +72,7 @@ describe("Wrapper", function () {
 
     it("assign 0 callback", () => {
       subject().ready();
-      expect(subject()._callbacks).to.have.key('0');
+      expect(subject()._callbacks).to.have.any.key('0');
     });
 
     it("gets resolved on callback", () => {

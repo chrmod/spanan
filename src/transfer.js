@@ -1,3 +1,5 @@
+import uuid from "./uuid";
+
 class Transfer {
 
   constructor(methodName, methodArgs = []) {
@@ -7,7 +9,7 @@ class Transfer {
       this.methodName = methodName;
       this.methodArgs = Array.prototype.map.call(methodArgs, String);
     }
-    this.id = Transfer.nextId();
+    this.id = uuid();
   }
 
   toString() {
@@ -16,12 +18,6 @@ class Transfer {
 
   argsToString() {
     return this.methodArgs.join(":");
-  }
-
-  static nextId() {
-    Transfer._nextId = Transfer._nextId || 0;
-    Transfer._nextId += 1;
-    return Transfer._nextId;
   }
 
 }

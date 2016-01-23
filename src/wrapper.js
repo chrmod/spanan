@@ -1,4 +1,5 @@
 import Transfer from "./transfer";
+import uuid from "./uuid";
 
 const loadingPromises = new WeakMap();
 
@@ -7,6 +8,7 @@ export default class {
     this._isLoaded = false;
     this._callbacks = Object.create(null);
     this.timeout = options.timeout || 1000;
+    this.id = uuid();
 
     if ( target instanceof HTMLElement && target.nodeName === "IFRAME" ) {
       this.iframe = target;
