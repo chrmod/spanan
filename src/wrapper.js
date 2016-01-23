@@ -1,5 +1,7 @@
 import Transfer from "./transfer";
 
+const loadingPromises = new WeakMap();
+
 export default class {
   constructor(target, options = {}) {
     this._isLoaded = false;
@@ -12,26 +14,24 @@ export default class {
     } else {
       this.target = target;
     }
-
-    this.ready(); // Sets load listener ASAP
   }
 
   send(fnName, fnArgs) {
     var transfer = new Transfer(fnName, fnArgs),
         promise;
 
-    promise = new Promise(function (resolve, reject) {
+    promise = new Promise( (resolve, reject) => {
       var rejectTimeout = setTimeout(reject, this.timeout);
 
-      this.ready().then(function () {
+      this.ready().then( () => {
         this.target.postMessage(transfer.toString(), "*");
 
         this._callbacks[transfer.id] = function () {
           clearTimeout(rejectTimeout);
           resolve.apply(null, arguments);
         };
-      }.bind(this));
-    }.bind(this));
+      });
+    });
 
     promise.transferId = transfer.id;
 
@@ -46,26 +46,24 @@ export default class {
     }
   }
 
-  // TODO: need a solid way to determine if iframe is loaded
   ready() {
-    if (this._isLoaded) {
-      return Promise.resolve();
-    } else {
-      return new Promise(function (resolve) {
-        setTimeout(function () {
+    let loadingPromise = loadingPromises.get(this);
+
+    if (!loadingPromise) {
+      loadingPromise = new Promise(resolve => {
+        let interval;
+        this._callbacks[0] = () => {
           resolve();
-          this._isLoaded = true;
-        }.bind(this), 200);
-        /*
-        if ( this.iframe ) {
-          this.iframe.addEventListener("load", resolve);
-          this._isLoaded = true;
-        } else {
-          this._isLoaded = true;
-          resolve();
+          clearInterval(interval);
         }
-        */
-      }.bind(this));
+        interval = setInterval( () => {
+          this.target.postMessage("spanan?", "*");
+        }, 100);
+      });
+
+      loadingPromises.set(this, loadingPromise);
     }
+
+    return loadingPromise;
   }
 }

@@ -92,7 +92,7 @@ describe("spanan", function () {
 
         beforeEach(function () {
           proxy = subject();
-          return proxy.ready();
+          proxy.ready = Promise.resolve;
         });
 
         it("convert function calls into postMessage calls on iframe", function (done) {

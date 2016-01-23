@@ -48,34 +48,57 @@ describe("Wrapper", function () {
     });
   });
 
-  describe("#ready", function () {
-    var iframeURL = "./fixtures/basic.html",
-        iframe;
-
-    afterEach(function () {
-      if ( iframe ) {
-        document.body.removeChild(iframe);
-      }
+  describe("#ready", () => {
+    afterEach(() => {
+      // make sure that init callback is called and loading interval is stopped
+      subject()._callbacks[0]();
     });
 
-    it("returns promise", function () {
+    it("returns promise", () => {
       expect(subject().ready()).to.be.instanceof(Promise);
     });
 
-    it("does not resolve if iframe is not loaded", function () {
-      iframe = spanan.createIframe(iframeURL);
-      expect(subject(iframe).ready()).to.not.be.fullfilled;
+    it("postMessage on wrapped object with init string", done => {
+      target = {
+        postMessage(msg) { msg === "spanan?" ? done() : null; }
+      };
+
+      subject().ready();
     });
 
-    it("does resolve when iframe is loaded", function (done) {
-      iframe = spanan.createIframe(iframeURL);
-      var wrapper = subject(iframe);
+    it("assign 0 callback", () => {
+      subject().ready();
+      expect(subject()._callbacks).to.have.key('0');
+    });
 
-      setTimeout(function () {
-        expect(wrapper.ready()).to.be.fullfilled;
+    it("gets resolved on callback", () => {
+      const loadingPromise = subject().ready();
+      subject()._callbacks[0]();
+      return loadingPromise;
+    });
+
+    it("called twice return same promise object", () => {
+      const promise1 = subject().ready();
+      const promise2 = subject().ready();
+      expect(promise1).to.equal(promise2);
+    });
+
+    it("keeps sending init string every 100ms until getting response", (done) => {
+      let sendCount = 0;
+
+      target = {
+        postMessage() { sendCount++; }
+      };
+
+      subject().ready();
+
+      setTimeout(() => {
+        subject()._callbacks[0]();
+        expect(sendCount).to.eql(3);
         done();
-      }, 200);
+      }, 350);
     });
+
   });
 
   describe("#dispatchMessage", () => {
@@ -95,17 +118,9 @@ describe("Wrapper", function () {
 
   describe("#send", function () {
 
-    it("calls postMessage with Transfer", function (done) {
-      var fnName = "test",
-          fnArgs = [1,2,3];
-
-      target.postMessage = function (msg) {
-        var serializedCall = new Transfer(fnName, fnArgs);
-        expect(msg).to.eql(serializedCall.toString());
-        done();
-      };
-
-      subject().send(fnName, fnArgs);
+    it("calls ready on itself", done => {
+      subject().ready = () => { done(); return Promise.resolve() };
+      subject().send("test", [1]);
     });
 
     it("returns promise", function () {
@@ -118,8 +133,21 @@ describe("Wrapper", function () {
     });
 
     context("target ready", function () {
-      beforeEach(function () {
-        return subject().ready();
+      beforeEach(() => {
+        subject().ready = Promise.resolve;
+      });
+
+      it("calls 'postMessage' with Transfer", function (done) {
+        var fnName = "test",
+            fnArgs = [1,2,3];
+
+        target.postMessage = function (msg) {
+          var serializedCall = new Transfer(fnName, fnArgs);
+          expect(msg).to.eql(serializedCall.toString());
+          done();
+        };
+
+        subject().send(fnName, fnArgs);
       });
 
       it("calls 'postMessage' on target", function (done) {
@@ -158,6 +186,10 @@ describe("Wrapper", function () {
     });
 
     context("target not ready", function () {
+      beforeEach(() => {
+        subject().ready = Promise.reject;
+      });
+
       it("does not call 'postMessage' on target", function () {
         var called = false;
 
