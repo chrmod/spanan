@@ -1,14 +1,22 @@
 /*eslint-env mocha */
 /*global chai */
 
-import spanan from "../spanan";
+import Spanan from "../spanan";
 import Wrapper from "../wrapper";
 
 var expect = chai.expect;
 
-describe("spanan", function () {
+describe("Spanan", function () {
 
-  describe("#createIframe", function () {
+  describe("#constructor", () => {
+    it("sets empty array of pendingMessages", () => {
+      const spanan = new Spanan();
+      expect(spanan).to.have.property("pendingMessages");
+      expect(spanan.pendingMessages).to.deep.equal([]);
+    });
+  });
+
+  describe(".createIframe", function () {
     var iframeURL = "./fixtures/basic.html";
 
     afterEach(function () {
@@ -21,7 +29,7 @@ describe("spanan", function () {
     }
 
     function subject() {
-      return spanan.createIframe(iframeURL);
+      return Spanan.createIframe(iframeURL);
     }
 
     describe("creates iframe", function () {
@@ -64,7 +72,7 @@ describe("spanan", function () {
     }
 
     function subject() {
-      return spanan.import(iframeURL);
+      return (new Spanan()).import(iframeURL);
     }
 
     describe("return proxy object", function () {
@@ -120,6 +128,12 @@ describe("spanan", function () {
   });
 
   describe("incoming messages", function () {
+    var spanan;
+
+    beforeEach(() => {
+      spanan = new Spanan();
+    });
+
     afterEach(function () {
       spanan.pendingMessages = [];
     });

@@ -1,23 +1,25 @@
 import Wrapper from "./wrapper";
 
-export default {
-  pendingMessages: [],
+export default class Spanan {
+  constructor() {
+    this.pendingMessages = [];
+    this.messageListener = this.messageListener.bind(this);
+  }
 
   messageListener(e) {
     this.pendingMessages.push(e);
-  },
+  }
 
   startListening() {
-    this.messageListener = this.messageListener.bind(this);
     window.addEventListener("message", this.messageListener);
-  },
+  }
 
   stopListening() {
     window.removeEventListener("message", this.messageListener);
-  },
+  }
 
   import(url) {
-    var iframe = this.createIframe(url),
+    var iframe = Spanan.createIframe(url),
         wrapper = new Wrapper(iframe);
 
     var handler = {
@@ -35,9 +37,9 @@ export default {
     };
 
     return new Proxy(wrapper, handler);
-  },
+  }
 
-  createIframe(url) {
+  static createIframe(url) {
     var iframe = document.createElement("iframe");
 
     iframe.src           = url;
@@ -48,4 +50,4 @@ export default {
 
     return iframe;
   }
-};
+}
