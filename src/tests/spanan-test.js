@@ -67,6 +67,15 @@ describe("Spanan", function () {
 
   });
 
+  describe("#export", () => {
+    it("registers function callbacks", () => {
+      const spanan = new Spanan();
+      const test = () => {};
+      spanan.export({ test });
+      expect(spanan).to.have.deep.property("exportedFunctions.test", test);
+    });
+  });
+
   describe("#import", function () {
     var iframeURL = "./fixtures/basic.html";
 

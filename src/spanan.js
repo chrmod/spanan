@@ -41,6 +41,10 @@ export default class Spanan {
     window.removeEventListener("message", this.messageListener);
   }
 
+  export(functions) {
+    this.exportedFunctions = functions;
+  }
+
   import(url) {
     const iframe = Spanan.createIframe(url),
         wrapper = new Wrapper(iframe);
