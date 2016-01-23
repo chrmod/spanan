@@ -3,7 +3,6 @@
 
 import Wrapper from "../wrapper";
 import Transfer from "../transfer";
-import spanan from "../spanan";
 
 var expect = chai.expect;
 
@@ -31,7 +30,8 @@ describe("Wrapper", function () {
     });
 
     it("sets contentWindow as a target if provided with iframe", function () {
-      var iframe = spanan.createIframe();
+      var iframe = document.createElement("iframe");
+      document.body.appendChild(iframe);
       expect(subject(iframe).target).to.eql(iframe.contentWindow);
 
       // cleanup
