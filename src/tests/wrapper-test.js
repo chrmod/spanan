@@ -78,6 +78,21 @@ describe("Wrapper", function () {
     });
   });
 
+  describe("#dispatchMessage", () => {
+    it("calls callback", (done) => {
+      const transferId = 1;
+      subject()._callbacks[transferId] = done;
+      subject().dispatchMessage({ transferId });
+    });
+
+    it("deletes called callback", () => {
+      const transferId = 1;
+      subject()._callbacks[transferId] = () => {};
+      subject().dispatchMessage({ transferId });
+      expect(subject()._callbacks).to.not.have.key(transferId);
+    });
+  });
+
   describe("#send", function () {
 
     it("calls postMessage with Transfer", function (done) {

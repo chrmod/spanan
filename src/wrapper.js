@@ -38,6 +38,14 @@ export default class {
     return promise;
   }
 
+  dispatchMessage(response) {
+    const transferId = response.transferId;
+    if (transferId in this._callbacks) {
+      this._callbacks[transferId].apply();
+      delete this._callbacks[transferId];
+    }
+  }
+
   // TODO: need a solid way to determine if iframe is loaded
   ready() {
     if (this._isLoaded) {
