@@ -11,8 +11,21 @@ describe("Spanan", function () {
   describe("#constructor", () => {
     it("sets empty array of pendingMessages", () => {
       const spanan = new Spanan();
-      expect(spanan).to.have.property("pendingMessages");
-      expect(spanan.pendingMessages).to.deep.equal([]);
+      expect(spanan).to.have.property("pendingMessages").that.deep.equals([]);
+    });
+
+    it("sets empty wrappers dict", () => {
+      const spanan = new Spanan();
+      expect(spanan).to.have.property("wrappers").that.deep.equal(new Map());
+    });
+  });
+
+  describe("#registerWrapper", () => {
+    it("puts wrapper on wrappers dict", () => {
+      const spanan = new Spanan();
+      const wrapper = new Wrapper();
+      spanan.registerWrapper(wrapper);
+      expect(spanan.wrappers.get(wrapper.id)).to.equal(wrapper);
     });
   });
 
@@ -74,6 +87,15 @@ describe("Spanan", function () {
     function subject() {
       return (new Spanan()).import(iframeURL);
     }
+
+    it("calls #registerWrapper with a Wrapper object", done => {
+      const spanan = new Spanan();
+      spanan.registerWrapper = wrapper => {
+        expect(wrapper).to.be.instanceOf(Wrapper);
+        done();
+      }
+      spanan.import(iframeURL);
+    });
 
     describe("return proxy object", function () {
       it("inherits from Wrapper", function () {

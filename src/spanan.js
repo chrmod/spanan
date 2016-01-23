@@ -3,7 +3,12 @@ import Wrapper from "./wrapper";
 export default class Spanan {
   constructor() {
     this.pendingMessages = [];
+    this.wrappers = new Map();
     this.messageListener = this.messageListener.bind(this);
+  }
+
+  registerWrapper(wrapper) {
+    this.wrappers.set(wrapper.id, wrapper);
   }
 
   messageListener(e) {
@@ -19,10 +24,12 @@ export default class Spanan {
   }
 
   import(url) {
-    var iframe = Spanan.createIframe(url),
+    const iframe = Spanan.createIframe(url),
         wrapper = new Wrapper(iframe);
 
-    var handler = {
+    this.registerWrapper(wrapper);
+
+    const handler = {
       get(target, name) {
         return name in target ?
           target[name] :
