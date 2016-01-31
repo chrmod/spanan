@@ -8,6 +8,14 @@ var expect = chai.expect;
 
 describe("Spanan", function () {
 
+  beforeEach(() => {
+    this.spanan = new Spanan();
+  });
+
+  afterEach(() => {
+    delete this.spanan;
+  });
+
   describe("#constructor", () => {
     it("sets empty wrappers dict", () => {
       const spanan = new Spanan();
@@ -188,6 +196,89 @@ describe("Spanan", function () {
     });
   });
 
+  describe("#dispatchCall", () => {
+
+
+    context("message matches exported function", () => {
+      let testFn;
+
+      beforeEach( () => {
+        testFn = function () {};
+        this.spanan.export({ test: (...args) => testFn.apply(null, args) });
+      });
+
+      it("returns true", () => {
+        expect(
+          this.spanan.dispatchCall({ fnName: "test" })
+        ).to.be.true;
+      });
+
+      it("calls exported function with fnArgs", done => {
+        const fnArgs = [1,2,3];
+
+        testFn = (...args) => {
+          expect(args).to.deep.equal(fnArgs);
+          done();
+        };
+
+        this.spanan.dispatchCall({ fnName: "test", fnArgs })
+      });
+
+      it("calls sendResponse with message and valuePromise", done => {
+        let message = { fnName: "test", fnArgs: [] };
+        this.spanan.sendResponse = (msg, valuePromise) => {
+          expect(msg).to.equal(message);
+          expect(valuePromise).to.be.instanceOf(Promise);
+          done();
+        }
+        this.spanan.dispatchCall(message);
+      });
+    });
+
+    it("returns false if message did not match any exported function", () => {
+      expect(
+        this.spanan.dispatchCall({ fnName: "test" })
+      ).to.be.false;
+    });
+  });
+
+  describe("#sendResponse", () => {
+    context("resolved valuePromise", () => {
+      it("calls postMessage on a source with value of valuePromise", done => {
+        const returnedValue = "1234";
+        const valuePromise = Promise.resolve(returnedValue);
+        const source = {};
+        const msg = { source, transferId: 1 };
+        source.postMessage = (content) => {
+          let responseTransfer = JSON.parse(content);
+          expect(responseTransfer).to.deep.equal({
+            transferId: msg.transferId,
+            response: returnedValue,
+          });
+          done();
+        };
+        this.spanan.sendResponse(msg, valuePromise);
+      });
+    });
+
+    context("unresolved valuePromise", () => {
+      it("does not call postMessage on a source", done => {
+        const valuePromise = new Promise( (res, rej) => {} );
+        const source = {};
+        const msg = { source };
+        let postMessageCalled = false;
+        source.postMessage = () => { postMessageCalled = true };
+
+        this.spanan.sendResponse(msg, valuePromise);
+
+        setTimeout( () => {
+          expect(postMessageCalled).to.be.false;
+          done();
+        }, 200);
+      });
+    });
+  });
+
   describe("#dispatchMessage", () => {
     let spanan;
 
@@ -195,7 +286,28 @@ describe("Spanan", function () {
       spanan = new Spanan();
     });
 
-    context("on spanan response", function () {
+    context("on spanan request", () => {
+      it("calls dispatchCall", done => {
+        spanan.dispatchCall = () => done();
+        spanan.dispatchMessage({
+          data: `{ "fnName": "echo", "fnArgs": ["test"] }`
+        });
+      });
+
+      it("returns same as dispatchCall", () => {
+        spanan.dispatchCall = () => true;
+        expect( spanan.dispatchMessage({
+          data: `{ "fnName": "echo", "fnArgs": ["test"] }`
+        }) ).to.equal(true);
+
+        spanan.dispatchCall = () => false;
+        expect( spanan.dispatchMessage({
+          data: `{ "fnName": "echo", "fnArgs": ["test"] }`
+        }) ).to.equal(false);
+      });
+    });
+
+    context("on spanan response", () => {
       let wrapper, cb;
 
       beforeEach(() => {
@@ -227,9 +339,15 @@ describe("Spanan", function () {
 
     context("on non spanan message", () => {
 
-      it("returns false if message was invalid", () => {
+      it("returns false if message was not JSON", () => {
         expect(
           spanan.dispatchMessage({ data: 'testmessage' })
+        ).to.equal(false);
+      });
+
+      it("returns false if message was non spanan JSON", () => {
+        expect(
+          spanan.dispatchMessage({ data: '{}' })
         ).to.equal(false);
       });
 

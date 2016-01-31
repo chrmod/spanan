@@ -2,6 +2,7 @@ import Wrapper from "./wrapper";
 
 export default class Spanan {
   constructor() {
+    this.exportedFunctions = Object.create(null);
     this.wrappers = new Map();
     this.messageListener = this.messageListener.bind(this);
   }
@@ -11,7 +12,7 @@ export default class Spanan {
   }
 
   dispatchMessage(ev) {
-    let msg, wrapper;
+    let msg;
 
     try {
       msg = JSON.parse(ev.data);
@@ -19,14 +20,50 @@ export default class Spanan {
       return false;
     }
 
-    wrapper = this.wrappers.get(msg.wrapperId);
+    if ( msg.wrapperId ) {
+      let wrapper = this.wrappers.get(msg.wrapperId);
 
-    if (wrapper) {
-      wrapper.dispatchMessage(msg);
-      return true;
+      if (wrapper) {
+        wrapper.dispatchMessage(msg);
+        return true;
+      } else {
+        return false;
+      }
+    } else if ( msg.fnName && msg.fnArgs ) {
+      return this.dispatchCall(msg);
     } else {
       return false;
     }
+  }
+
+  dispatchCall(msg) {
+    const exportedFunction = this.exportedFunctions[msg.fnName];
+
+    if ( !exportedFunction ) {
+      return false;
+    }
+
+    let value = exportedFunction.apply(null, msg.fnArgs);
+
+    let valuePromise = (value && value.then) ? value : Promise.resolve(value);
+
+    this.sendResponse(msg, valuePromise);
+
+    return true;
+  }
+
+  sendResponse(msg, valuePromise) {
+    let responseTransfer = {
+      transferId: msg.transferId,
+    };
+
+    valuePromise.then( (value) => {
+      responseTransfer.response = value;
+
+      let response = JSON.stringify(responseTransfer);
+
+      msg.source.postMessage(response);
+    });
   }
 
   messageListener(ev) {
