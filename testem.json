@@ -4,7 +4,7 @@
     "Firefox"
   ],
   "test_page": "tests/index.mustache",
-  "before_tests": "babel src --out-dir tmp",
+  "before_tests": "babel src --out-dir tmp --plugins transform-es2015-modules-amd",
   "on_exit": "rm -rf tmp",
   "src_files": [
     "tmp/**/*-test.js"
