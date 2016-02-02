@@ -23,7 +23,7 @@ export default class {
         promise;
 
     promise = new Promise( (resolve, reject) => {
-      var rejectTimeout = setTimeout(reject, this.timeout);
+      var rejectTimeout = setTimeout(reject.bind(null, "timeout"), this.timeout);
 
       this.ready().then( () => {
         this.target.postMessage(transfer.toString(), "*");
@@ -48,6 +48,10 @@ export default class {
     }
   }
 
+  activate() {
+    this._callbacks[0]();
+  }
+
   ready() {
     let loadingPromise = loadingPromises.get(this);
 
@@ -59,7 +63,7 @@ export default class {
           clearInterval(interval);
         }
         interval = setInterval( () => {
-          this.target.postMessage("spanan?", "*");
+          this.target.postMessage(`spanan?${this.id}`, "*");
         }, 100);
       });
 

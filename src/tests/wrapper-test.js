@@ -64,7 +64,7 @@ describe("Wrapper", function () {
 
     it("postMessage on wrapped object with init string", done => {
       target = {
-        postMessage(msg) { msg === "spanan?" ? done() : null; }
+        postMessage(msg) { msg === `spanan?${subject().id}` ? done() : null; }
       };
 
       subject().ready();
@@ -120,6 +120,13 @@ describe("Wrapper", function () {
     });
   });
 
+  describe("#activate", () => {
+    it("calls callback 0", done => {
+      subject()._callbacks[0] = () => done();
+      subject().activate();
+    });
+  });
+
   describe("#send", function () {
 
     it("calls ready on itself", done => {
@@ -133,7 +140,7 @@ describe("Wrapper", function () {
 
     it("promise get rejected after timeout", function () {
       var wrapper = new Wrapper(target, { timeout: 0 });
-      return expect(wrapper.send("test")).to.eventually.be.rejected;
+      return expect(wrapper.send("test")).to.eventually.be.rejectedWith("timeout");
     });
 
     context("target ready", function () {

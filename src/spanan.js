@@ -14,13 +14,21 @@ export default class Spanan {
   dispatchMessage(ev) {
     let msg;
 
+    if ( typeof ev.data === "string" && ev.data.indexOf("spanan?") === 0 ) {
+      let wrapperId = ev.data.split("?")[1];
+      this.wrappers.get(wrapperId).activate();
+      return;
+    }
+
     try {
       msg = JSON.parse(ev.data);
     } catch (e) {
       return false;
     }
 
-    if ( msg.wrapperId ) {
+    let isResponse = Boolean(msg.wrapperId);
+
+    if ( isResponse ) {
       let wrapper = this.wrappers.get(msg.wrapperId);
 
       if (wrapper) {
@@ -30,6 +38,7 @@ export default class Spanan {
         return false;
       }
     } else if ( msg.fnName && msg.fnArgs ) {
+      msg.source = ev.source;
       return this.dispatchCall(msg);
     } else {
       return false;
@@ -82,9 +91,12 @@ export default class Spanan {
     this.exportedFunctions = functions;
   }
 
-  import(url) {
-    const iframe = Spanan.createIframe(url),
-        wrapper = new Wrapper(iframe);
+  import(target) {
+    if ( typeof target === "string" ) {
+      target = Spanan.createIframe(target);
+    }
+
+    const wrapper = new Wrapper(target);
 
     this.registerWrapper(wrapper);
 

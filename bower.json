@@ -20,8 +20,9 @@
   ],
   "dependencies": {},
   "devDependencies": {
-    "chai": "~2.1.0",
-    "chai-as-promised": "~5.1.0",
-    "requirejs": "~2.1.22"
+    "chai": "3.5.0",
+    "chai-as-promised": "5.2.0",
+    "requirejs": "~2.1.22",
+    "mocha": "^2.4.5"
   }
 }

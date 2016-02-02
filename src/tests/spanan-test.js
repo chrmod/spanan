@@ -89,7 +89,9 @@ describe("Spanan", function () {
 
     afterEach(function () {
       var iframe = spananIframe();
-      document.body.removeChild(iframe);
+      if ( iframe ) {
+        document.body.removeChild(iframe);
+      }
     });
 
     function spananIframe() {
@@ -99,6 +101,58 @@ describe("Spanan", function () {
     function subject() {
       return (new Spanan()).import(iframeURL);
     }
+
+    context("accepts argument of different types", () => {
+      let createIframe;
+
+      beforeEach(() => {
+        createIframe = Spanan.createIframe;
+      });
+
+      afterEach(() => {
+        Spanan.createIframe = createIframe;
+      });
+
+      context("called with URL", () => {
+
+        it("creates iframe with Spanan.createIframe", done => {
+          const url = "test.url";
+          const spanan = new Spanan();
+
+          Spanan.createIframe = (iframeUrl) => {
+            expect(iframeUrl).to.equal(url);
+            done();
+          };
+
+          spanan.import(url);
+        });
+
+      });
+
+      context("called with postMessage enable object", () => {
+
+        it("doesn't call Spanan.createIframe", done => {
+          const obj = {
+            postMessage() {}
+          };
+          const spanan = new Spanan();
+          let called = false;
+
+          Spanan.createIframe = () => {
+            called = true;
+          };
+
+          spanan.import(obj);
+
+          setTimeout(() => {
+            expect(called).to.equal(false);
+            done();
+          }, 200);
+        });
+
+      });
+
+    });
 
     it("calls #registerWrapper with a Wrapper object", done => {
       const spanan = new Spanan();
@@ -286,11 +340,46 @@ describe("Spanan", function () {
       spanan = new Spanan();
     });
 
+    context("on init message", () => {
+      it("calls activate on wrapper", done => {
+        let wrapper = {
+          id: "1",
+          activate: () => done(),
+        };
+        spanan.wrappers.set(wrapper.id, wrapper);
+        spanan.dispatchMessage({ data: `spanan?${wrapper.id}` });
+      });
+    });
+
     context("on spanan request", () => {
       it("calls dispatchCall", done => {
         spanan.dispatchCall = () => done();
         spanan.dispatchMessage({
           data: `{ "fnName": "echo", "fnArgs": ["test"] }`
+        });
+      });
+
+      it("pass message to dispatchCall", done => {
+        let message = { fnName: "echo", fnArgs: [] };
+        spanan.dispatchCall = (msg) => {
+          expect(msg).to.have.property("fnName").that.deep.equal(message.fnName);
+          expect(msg).to.have.property("fnArgs").that.deep.equal(message.fnArgs);
+          done();
+        };
+        spanan.dispatchMessage({
+          data: JSON.stringify(message)
+        });
+      });
+
+      it("attaches event source to message", done => {
+        let source = {};
+        spanan.dispatchCall = (msg) => {
+          expect(msg).to.have.property("source", source);
+          done();
+        };
+        spanan.dispatchMessage({
+          data: `{ "fnName": "echo", "fnArgs": ["test"] }`,
+          source
         });
       });
 
