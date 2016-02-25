@@ -33,7 +33,7 @@ describe("Spanan", function () {
   });
 
   describe(".createIframe", function () {
-    var iframeURL = "./fixtures/basic.html";
+    var iframeURL = "non-existing-page.html";
 
     afterEach(function () {
       var iframe = spananIframe();
@@ -85,7 +85,7 @@ describe("Spanan", function () {
   });
 
   describe("#import", function () {
-    var iframeURL = "./fixtures/basic.html";
+    var iframeURL = "non-existing-page.html";
 
     afterEach(function () {
       var iframe = spananIframe();
