@@ -8,24 +8,18 @@ var expect = chai.expect;
 describe("Transfer", function () {
 
   describe("#construtor", function () {
-    it("accepts methodName and methodArgs", function () {
-      var methodCall = new Transfer("test", [1,2,3]);
-      expect(methodCall.methodName).to.equal("test");
-      expect(methodCall.methodArgs).to.eql(["1","2","3"]);
+    it("accepts fnName and fnArgs", function () {
+      var fnCall = new Transfer("test", [1,2,3]);
+      expect(fnCall.fnName).to.equal("test");
+      expect(fnCall.fnArgs).to.eql([1,2,3]);
     });
 
-    it("accepts methodArgs being function arguments", function () {
+    it("accepts fnArgs being function arguments", function () {
       (function () {
-        var methodCall = new Transfer("test", arguments);
-        expect(methodCall.methodName).to.equal("test");
-        expect(methodCall.methodArgs).to.eql(["1","2","3"]);
+        var fnCall = new Transfer("test", arguments);
+        expect(fnCall.fnName).to.equal("test");
+        expect(fnCall.fnArgs).to.eql([1,2,3]);
       })(1,2,3);
-    });
-
-    it("accepts serialized string", function () {
-      var methodCall = new Transfer("test:1:2:3");
-      expect(methodCall.methodName).to.equal("test");
-      expect(methodCall.methodArgs).to.eql(["1","2","3"]);
     });
 
     it("sets uniqe id", function () {
@@ -36,16 +30,9 @@ describe("Transfer", function () {
   });
 
   describe("#toString", function () {
-    it("serializes method call", function () {
-      var methodCall = new Transfer("test", [1,2,3]);
-      expect(methodCall.toString()).to.equal("test:1:2:3");
-    });
-  });
-
-  describe("#argsToString", function () {
-    it("serializes method call", function () {
-      var methodCall = new Transfer("test", [1,2,3]);
-      expect(methodCall.argsToString()).to.equal("1:2:3");
+    it("aliases JSON.stringify", function () {
+      let transfer = new Transfer("test", [1,2,3]);
+      expect(JSON.parse(transfer.toString())).to.deep.equal(transfer);
     });
   });
 

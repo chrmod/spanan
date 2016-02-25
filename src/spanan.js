@@ -26,7 +26,7 @@ export default class Spanan {
       return false;
     }
 
-    let isResponse = Boolean(msg.wrapperId);
+    let isResponse = Boolean(msg.wrapperId) && Boolean(msg.transferId);
 
     if ( isResponse ) {
       let wrapper = this.wrappers.get(msg.wrapperId);
@@ -63,7 +63,8 @@ export default class Spanan {
 
   sendResponse(msg, valuePromise) {
     let responseTransfer = {
-      transferId: msg.transferId,
+      transferId: msg.id,
+      wrapperId: msg.wrapperId
     };
 
     valuePromise.then( (value) => {
@@ -71,7 +72,7 @@ export default class Spanan {
 
       let response = JSON.stringify(responseTransfer);
 
-      msg.source.postMessage(response);
+      msg.source.postMessage(response, "*");
     });
   }
 

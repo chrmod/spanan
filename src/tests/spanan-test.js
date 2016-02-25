@@ -302,12 +302,13 @@ describe("Spanan", function () {
         const returnedValue = "1234";
         const valuePromise = Promise.resolve(returnedValue);
         const source = {};
-        const msg = { source, transferId: 1 };
+        const msg = { source, id: 1, wrapperId: 2 };
         source.postMessage = (content) => {
           let responseTransfer = JSON.parse(content);
           expect(responseTransfer).to.deep.equal({
-            transferId: msg.transferId,
+            transferId: msg.id,
             response: returnedValue,
+            wrapperId: msg.wrapperId
           });
           done();
         };
@@ -408,19 +409,19 @@ describe("Spanan", function () {
       it("passes message to it's wrapper", done => {
         cb = done;
         spanan.dispatchMessage({
-          data: `{ "wrapperId": ${wrapper.id} }`
+          data: `{ "wrapperId": ${wrapper.id}, "transferId": 2 }`
         });
       });
 
       it("returns true", () => {
         expect(spanan.dispatchMessage({
-          data: `{ "wrapperId": ${wrapper.id} }`
+          data: `{ "wrapperId": ${wrapper.id}, "transferId": 2 }`
         })).to.equal(true);
       });
 
       it("returns false on message with invalid wrapperId", () => {
         expect(spanan.dispatchMessage({
-          data: '{ "wrapperId": 111 }'
+          data: '{ "wrapperId": 111, "transferId": 2 }'
         })).to.equal(false);
       });
 

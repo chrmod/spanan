@@ -15,23 +15,26 @@ describe("Integration - same window", () => {
 
   afterEach(() => {
     spanan.stopListening();
-    document.body.removeChild(agent.target);
   });
 
   it("function with no return value", () => {
     spanan.export({
-      test() {}
+      test() { }
     });
 
     return expect(agent.test()).to.eventually.be.undefined;
   });
-/*
-  context("echo function", () => {
+  context("echo function conserve data type", () => {
 
     beforeEach(() => {
       spanan.export({
         echo(x) { return x; }
       });
+    });
+
+    it("Boolean", () => {
+      let value = true;
+      return expect(agent.echo(value)).to.eventually.equal(value);
     });
 
     it("String", () => {
@@ -43,7 +46,16 @@ describe("Integration - same window", () => {
       let value = 1111;
       return expect(agent.echo(value)).to.eventually.equal(value);
     });
+
+    it("Array", () => {
+      let value = [1,2,3];
+      return expect(agent.echo(value)).to.eventually.deep.equal(value);
+    });
+
+    it("Object", () => {
+      let value = { a: 11, b: 22 };
+      return expect(agent.echo(value)).to.eventually.deep.equal(value);
+    });
   });
-  */
 
 });

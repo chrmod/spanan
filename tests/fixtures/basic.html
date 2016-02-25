@@ -8,7 +8,7 @@
       var methodCall = new Tranfer(e.data);
 
       if(methodCall.methodName === "echo"){
-        e.source.postMessage(methodCall.argsToString(), 'http://localhost:7357');
+        e.source.postMessage(JSON.stringify({}), 'http://localhost:7357');
       }
     }, false);
   });

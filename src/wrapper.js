@@ -22,6 +22,8 @@ export default class {
     var transfer = new Transfer(fnName, fnArgs),
         promise;
 
+    transfer.wrapperId = this.id;
+
     promise = new Promise( (resolve, reject) => {
       var rejectTimeout = setTimeout(reject.bind(null, "timeout"), this.timeout);
 
@@ -43,7 +45,7 @@ export default class {
   dispatchMessage(response) {
     const transferId = response.transferId;
     if (transferId in this._callbacks) {
-      this._callbacks[transferId].apply();
+      this._callbacks[transferId].call(null, response.response);
       delete this._callbacks[transferId];
     }
   }

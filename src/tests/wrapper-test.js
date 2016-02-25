@@ -153,8 +153,8 @@ describe("Wrapper", function () {
             fnArgs = [1,2,3];
 
         target.postMessage = function (msg) {
-          var serializedCall = new Transfer(fnName, fnArgs);
-          expect(msg).to.eql(serializedCall.toString());
+          let transfer = JSON.parse(msg);
+          expect(transfer).to.have.property("fnName").that.equal(fnName);
           done();
         };
 
