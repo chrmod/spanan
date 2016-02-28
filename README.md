@@ -109,6 +109,18 @@ both.
   That means when you pass an object it will be changed into JSON using
   `JSON.stringify`, thus it will lose its prototype.
 
+# Tests
+
+```
+npm test
+```
+
+# Building for distribution
+
+```
+npm run build
+```
+
 # Contribution
 
 Before submiting a pull request, please first create an issue describing what

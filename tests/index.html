@@ -11,16 +11,24 @@
 
   <script src="/bower_components/chai/chai.js"></script>
   <script src="/bower_components/chai-as-promised/lib/chai-as-promised.js"></script>
-  <script src="/bower_components/requirejs/require.js"></script>
+  <script src="/bower_components/system.js/dist/system.js"></script>
 </head>
 <body>
   <div id="mocha"></div>
   <script>
-    var files = [];
-    {{#serve_files}}
-      files.push("../{{{src}}}");
-    {{/serve_files}}
-    require(files, function() {
+    System.defaultJSExtensions = true;
+  </script>
+  <script>
+    var tests = [
+      "wrapper-test.js",
+      "spanan-test.js",
+      "transfer-test.js",
+      "integration/echo-test.js",
+      "integration/same-window-test.js",
+    ];
+    Promise.all(tests.map(function (url) {
+      return System.import("../build/test-files/"+url);
+    })).then(function () {
       mocha.run();
     });
   </script>

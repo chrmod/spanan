@@ -1,11 +1,8 @@
 <!-- This stub document responds for one spanan method 'echo' -->
-<script src="/bower_components/requirejs/require.js"></script>
+<script src="../../build/output.js"></script>
 <script>
-  require(['../../tmp/spanan.js'], function (modules) {
-    var spanan = new modules.default();
-    spanan.startListening();
-    spanan.export({
-      echo(val) { return val; }
-    });
+  spanan.startListening();
+  spanan.export({
+    echo(val) { return val; }
   });
 </script>
