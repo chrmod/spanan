@@ -16,7 +16,12 @@ export default class Spanan {
 
     if ( typeof ev.data === "string" && ev.data.indexOf("spanan?") === 0 ) {
       let wrapperId = ev.data.split("?")[1];
-      this.wrappers.get(wrapperId).activate();
+
+      if (this.wrappers.has(wrapperId)) {
+        this.wrappers.get(wrapperId).activate();
+      } else {
+        ev.source.postMessage(ev.data, "*");
+      }
       return;
     }
 
