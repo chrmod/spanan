@@ -14,7 +14,6 @@ describe("Spanan", function () {
   });
 
   afterEach(() => {
-    spanan.stopListening();
     spanan.destroy();
   });
 
@@ -25,6 +24,37 @@ describe("Spanan", function () {
 
     it("set isListening flag to false", function () {
       expect(spanan).to.have.property("isListening").to.be.false;
+    });
+
+    it("sets itself as property of passed context", function () {
+      let context = {};
+      let spanan = new Spanan(context);
+      expect(context).to.have.property("spanan").that.equal(spanan);
+    });
+
+    it("throws error is spanan is already loaded onto context", function () {
+      let context = { spanan: {} };
+      expect(function () {
+        new Spanan(context);
+      }).to.throw("spanan already loaded");
+    });
+  });
+
+  describe("#destroy", function () {
+    it("deletes spanan from its context", function () {
+      let context = {};
+      let spanan = new Spanan(context);
+      spanan.destroy();
+      expect(context).to.not.have.property("spanan");
+    });
+
+    it("call #stopListening", function (done) {
+      let stopListening = spanan.stopListening;
+      spanan.stopListening = function () {
+        done();
+        spanan.stopListening = stopListening
+      };
+      spanan.destroy();
     });
   });
 
@@ -80,17 +110,15 @@ describe("Spanan", function () {
   });
 
   describe("#startListening", function () {
-    let addEventListener, spanan;
+    let addEventListener;
 
     beforeEach(function () {
-      spanan = new Spanan();
       addEventListener = window.addEventListener;
       window.addEventListener = function () {};
     });
 
     afterEach(function () {
       window.addEventListener = addEventListener;
-      spanan.stopListening();
     });
 
     context("not listening", function () {
@@ -128,15 +156,6 @@ describe("Spanan", function () {
   });
 
   describe("#export", () => {
-    let spanan;
-
-    beforeEach(function () {
-      spanan = new Spanan();
-    });
-
-    afterEach(function () {
-      spanan.stopListening();
-    });
 
     it("registers function callbacks", () => {
       const test = () => {};
@@ -152,16 +171,6 @@ describe("Spanan", function () {
 
   describe("#import", function () {
     var iframeURL = "non-existing-page.html";
-
-    let spanan;
-
-    beforeEach(function () {
-      spanan = new Spanan();
-    });
-
-    afterEach(function () {
-      spanan.stopListening();
-    });
 
     afterEach(function () {
       var iframe = spananIframe();
@@ -202,7 +211,6 @@ describe("Spanan", function () {
 
         it("creates iframe with Spanan.createIframe", done => {
           const url = "test.url";
-          const spanan = new Spanan();
 
           Spanan.createIframe = (iframeUrl) => {
             expect(iframeUrl).to.equal(url);
@@ -293,20 +301,11 @@ describe("Spanan", function () {
   });
 
   describe("incoming messages", function () {
-    var spanan;
-
-    beforeEach(() => {
-      spanan = new Spanan();
-    });
 
     context("when listening", function () {
 
       beforeEach(function () {
         spanan.startListening();
-      });
-
-      afterEach(function () {
-        spanan.stopListening();
       });
 
       it("calls dispatchMessage", function (done) {
@@ -411,11 +410,6 @@ describe("Spanan", function () {
   });
 
   describe("#dispatchMessage", () => {
-    let spanan;
-
-    beforeEach(() => {
-      spanan = new Spanan();
-    });
 
     context("on init message", () => {
       it("calls activate on wrapper", done => {

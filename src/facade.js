@@ -2,6 +2,9 @@ import Wrapper from "./wrapper";
 
 export default class {
   constructor(ctx = window || global) {
+    if (ctx.spanan) {
+      throw new Error("spanan already loaded");
+    }
     this.ctx = ctx;
     this.ctx.spanan = this;
     this.exportedFunctions = Object.create(null);
@@ -11,6 +14,7 @@ export default class {
   }
 
   destroy() {
+    this.stopListening();
     delete this.ctx.spanan;
   }
 
