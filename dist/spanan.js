@@ -22,6 +22,7 @@ var Spanan = (function () {
     this.exportedFunctions = Object.create(null);
     this.wrappers = new Map();
     this.messageListener = this.messageListener.bind(this);
+    this.isListening = false;
   }
 
   _createClass(Spanan, [{
@@ -110,21 +111,28 @@ var Spanan = (function () {
   }, {
     key: "startListening",
     value: function startListening() {
-      window.addEventListener("message", this.messageListener);
+      if (!this.isListening) {
+        window.addEventListener("message", this.messageListener);
+        this.isListening = true;
+      }
     }
   }, {
     key: "stopListening",
     value: function stopListening() {
       window.removeEventListener("message", this.messageListener);
+      this.isListening = false;
     }
   }, {
     key: "export",
     value: function _export(functions) {
+      this.startListening();
       this.exportedFunctions = functions;
     }
   }, {
     key: "import",
     value: function _import(target) {
+      this.startListening();
+
       if (typeof target === "string") {
         target = Spanan.createIframe(target);
       }

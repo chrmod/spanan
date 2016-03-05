@@ -10,7 +10,6 @@ describe("Integration - echo page", () => {
 
   beforeEach(() => {
     agent = spanan.import("fixtures/echo.html");
-    spanan.startListening();
   });
 
   afterEach(() => {

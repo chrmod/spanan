@@ -5,6 +5,7 @@ export default class Spanan {
     this.exportedFunctions = Object.create(null);
     this.wrappers = new Map();
     this.messageListener = this.messageListener.bind(this);
+    this.isListening = false;
   }
 
   registerWrapper(wrapper) {
@@ -86,18 +87,25 @@ export default class Spanan {
   }
 
   startListening() {
-    window.addEventListener("message", this.messageListener);
+    if (!this.isListening) {
+      window.addEventListener("message", this.messageListener);
+      this.isListening = true;
+    }
   }
 
   stopListening() {
     window.removeEventListener("message", this.messageListener);
+    this.isListening = false;
   }
 
   export(functions) {
+    this.startListening();
     this.exportedFunctions = functions;
   }
 
   import(target) {
+    this.startListening();
+
     if ( typeof target === "string" ) {
       target = Spanan.createIframe(target);
     }

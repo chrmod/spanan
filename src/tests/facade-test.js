@@ -13,6 +13,7 @@ describe("Spanan", function () {
   });
 
   afterEach(() => {
+    this.spanan.stopListening();
     delete this.spanan;
   });
 
@@ -20,6 +21,11 @@ describe("Spanan", function () {
     it("sets empty wrappers dict", () => {
       const spanan = new Spanan();
       expect(spanan).to.have.property("wrappers").that.deep.equal(new Map());
+    });
+
+    it("set isListening flag to false", function () {
+      const spanan = new Spanan();
+      expect(spanan).to.have.property("isListening").to.be.false;
     });
   });
 
@@ -75,17 +81,89 @@ describe("Spanan", function () {
 
   });
 
+  describe("#startListening", function () {
+    let addEventListener, spanan;
+
+    beforeEach(function () {
+      spanan = new Spanan();
+      addEventListener = window.addEventListener;
+      window.addEventListener = function () {};
+    });
+
+    afterEach(function () {
+      window.addEventListener = addEventListener;
+      spanan.stopListening();
+    });
+
+    context("not listening", function () {
+      it("sets isListening to true", function () {
+        spanan.startListening()
+        expect(spanan).to.have.property("isListening").that.is.true;
+      });
+
+      it("call addEventListener on window", function (done) {
+        window.addEventListener = function () {
+          done();
+        }
+        spanan.startListening()
+      });
+    });
+
+    context("listening", function () {
+      beforeEach(function () {
+        spanan.isListening = true;
+      });
+
+      it("doesn't call addEventListener on window", function (done) {
+        let called = false;
+        window.addEventListener = function () {
+          called = true;
+        }
+        setTimeout(function () {
+          if (!called) {
+            done();
+          }
+        }, 100);
+        spanan.startListening()
+      });
+    });
+  });
+
   describe("#export", () => {
+    let spanan;
+
+    beforeEach(function () {
+      spanan = new Spanan();
+    });
+
+    afterEach(function () {
+      spanan.stopListening();
+    });
+
     it("registers function callbacks", () => {
-      const spanan = new Spanan();
       const test = () => {};
       spanan.export({ test });
       expect(spanan).to.have.deep.property("exportedFunctions.test", test);
+    });
+
+    it("calls #startListening", function (done) {
+      spanan.startListening = function () { done(); };
+      spanan.export({});
     });
   });
 
   describe("#import", function () {
     var iframeURL = "non-existing-page.html";
+
+    let spanan;
+
+    beforeEach(function () {
+      spanan = new Spanan();
+    });
+
+    afterEach(function () {
+      spanan.stopListening();
+    });
 
     afterEach(function () {
       var iframe = spananIframe();
@@ -98,9 +176,18 @@ describe("Spanan", function () {
       return document.querySelector("iframe.spanan");
     }
 
-    function subject() {
-      return (new Spanan()).import(iframeURL);
-    }
+    it("calls #startListening", function (done) {
+      spanan.startListening = function () { done(); };
+      spanan.import();
+    });
+
+    it("calls #registerWrapper with a Wrapper object", done => {
+      spanan.registerWrapper = wrapper => {
+        expect(wrapper).to.be.instanceOf(Wrapper);
+        done();
+      }
+      spanan.import(iframeURL);
+    });
 
     context("accepts argument of different types", () => {
       let createIframe;
@@ -135,7 +222,6 @@ describe("Spanan", function () {
           const obj = {
             postMessage() {}
           };
-          const spanan = new Spanan();
           let called = false;
 
           Spanan.createIframe = () => {
@@ -154,52 +240,45 @@ describe("Spanan", function () {
 
     });
 
-    it("calls #registerWrapper with a Wrapper object", done => {
-      const spanan = new Spanan();
-      spanan.registerWrapper = wrapper => {
-        expect(wrapper).to.be.instanceOf(Wrapper);
-        done();
-      }
-      spanan.import(iframeURL);
-    });
-
     describe("return proxy object", function () {
+      var subject;
+
+      beforeEach(function () {
+        subject = spanan.import(iframeURL);
+      });
+
       it("inherits from Wrapper", function () {
-        var proxy = subject();
-        expect(proxy).to.be.instanceOf(Wrapper);
+        expect(subject).to.be.instanceOf(Wrapper);
       });
 
       it("has iframe contentWindow as its 'target' property", function () {
-        expect(subject().target).to.eql(spananIframe().contentWindow);
+        expect(subject).to.have.property("target")
+                       .that.eql(spananIframe().contentWindow);
       });
 
       it("calls on proxy object properties return a promise", function () {
-        var proxy = subject();
-        expect(proxy.nonExistingMethod()).to.be.instanceof(Promise);
+        expect(subject.nonExistingMethod()).to.be.instanceof(Promise);
       });
 
       it("calls to undefined methods return rejected promise", function () {
-        var proxy = subject();
-        return expect(proxy.nonexistingmethod()).to.eventually.be.rejected;
+        return expect(subject.nonexistingmethod()).to.eventually.be.rejected;
       });
 
       context("iframe loaded", function () {
-        var proxy;
 
         beforeEach(function () {
-          proxy = subject();
-          proxy.ready = Promise.resolve;
+          subject.ready = Promise.resolve;
         });
 
         it("convert function calls into postMessage calls on iframe", function (done) {
           spananIframe().contentWindow.postMessage = function () {
             done();
           };
-          proxy.nonExistingMethod();
+          subject.nonExistingMethod();
         });
 
         it("calls to 'echo' methods return promise resolved to passed value", function (done) {
-          var promise = proxy.echo("test");
+          var promise = subject.echo("test");
 
           promise.then(function (response) {
             expect(response).to.equal("test");
@@ -207,7 +286,7 @@ describe("Spanan", function () {
           });
 
           setTimeout(function () {
-            proxy._callbacks[promise.transferId]("test");
+            subject._callbacks[promise.transferId]("test");
           }, 250);
         });
       });
@@ -251,7 +330,6 @@ describe("Spanan", function () {
   });
 
   describe("#dispatchCall", () => {
-
 
     context("message matches exported function", () => {
       let testFn;

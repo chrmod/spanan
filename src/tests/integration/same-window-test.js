@@ -10,7 +10,6 @@ describe("Integration - same window", () => {
 
   beforeEach(() => {
     agent = spanan.import(window);
-    spanan.startListening();
   });
 
   afterEach(() => {
