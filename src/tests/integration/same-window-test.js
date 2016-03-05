@@ -14,7 +14,7 @@ describe("Integration - same window", () => {
   });
 
   beforeEach(() => {
-    agent = spanan.import(window);
+    agent = spanan.import(spanan.ctx);
   });
 
   afterEach(() => {

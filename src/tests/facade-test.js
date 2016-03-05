@@ -7,10 +7,14 @@ import Wrapper from "../wrapper";
 var expect = chai.expect;
 
 describe("Spanan", function () {
+  let ctx = {
+    addEventListener() {},
+    removeEventListener() {},
+  };
   let spanan;
 
   beforeEach(() => {
-    spanan = new Spanan();
+    spanan = new Spanan(ctx);
   });
 
   afterEach(() => {
@@ -27,25 +31,28 @@ describe("Spanan", function () {
     });
 
     it("sets itself as property of passed context", function () {
-      let context = {};
-      let spanan = new Spanan(context);
-      expect(context).to.have.property("spanan").that.equal(spanan);
+      expect(ctx).to.have.property("spanan").that.equal(spanan);
     });
 
     it("throws error is spanan is already loaded onto context", function () {
-      let context = { spanan: {} };
+      ctx.spanan = {};
       expect(function () {
-        new Spanan(context);
+        new Spanan(ctx);
       }).to.throw("spanan already loaded");
     });
   });
 
   describe("#destroy", function () {
-    it("deletes spanan from its context", function () {
-      let context = {};
-      let spanan = new Spanan(context);
+
+    beforeEach(function () {
+      // removes previous instance
       spanan.destroy();
-      expect(context).to.not.have.property("spanan");
+      spanan = new Spanan(ctx);
+    });
+
+    it("deletes spanan from its context", function () {
+      spanan.destroy();
+      expect(ctx).to.not.have.property("spanan");
     });
 
     it("call #stopListening", function (done) {
@@ -113,12 +120,12 @@ describe("Spanan", function () {
     let addEventListener;
 
     beforeEach(function () {
-      addEventListener = window.addEventListener;
-      window.addEventListener = function () {};
+      addEventListener = ctx.addEventListener;
+      ctx.addEventListener = function () {};
     });
 
     afterEach(function () {
-      window.addEventListener = addEventListener;
+      ctx.addEventListener = addEventListener;
     });
 
     context("not listening", function () {
@@ -128,7 +135,7 @@ describe("Spanan", function () {
       });
 
       it("call addEventListener on window", function (done) {
-        window.addEventListener = function () {
+        ctx.addEventListener = function () {
           done();
         }
         spanan.startListening()
@@ -142,7 +149,7 @@ describe("Spanan", function () {
 
       it("doesn't call addEventListener on window", function (done) {
         let called = false;
-        window.addEventListener = function () {
+        ctx.addEventListener = function () {
           called = true;
         }
         setTimeout(function () {
@@ -298,32 +305,6 @@ describe("Spanan", function () {
       });
     });
 
-  });
-
-  describe("incoming messages", function () {
-
-    context("when listening", function () {
-
-      beforeEach(function () {
-        spanan.startListening();
-      });
-
-      it("calls dispatchMessage", function (done) {
-        spanan.dispatchMessage = () => done();
-        window.postMessage("test", "*");
-      });
-
-    });
-
-    context("when not listening", function () {
-
-      it("does not puts incoming message into queue", function (done) {
-        spanan.dispatchMessage = () => done(new Error("should not happen"));
-        window.postMessage("test", "*");
-        setTimeout(done, 200);
-      });
-
-    });
   });
 
   describe("#dispatchCall", () => {

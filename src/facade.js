@@ -98,13 +98,13 @@ export default class {
 
   startListening() {
     if (!this.isListening) {
-      window.addEventListener("message", this.messageListener);
+      this.ctx.addEventListener("message", this.messageListener);
       this.isListening = true;
     }
   }
 
   stopListening() {
-    window.removeEventListener("message", this.messageListener);
+    this.ctx.removeEventListener("message", this.messageListener);
     this.isListening = false;
   }
 
