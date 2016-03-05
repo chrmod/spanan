@@ -29,7 +29,7 @@ output = babel(output, {
 });
 var output = browserify(output, {
   entries: [ './index.js' ],
-  outputFile: 'output.js'
+  outputFile: 'spanan.js'
 });
 
 if (env === 'production') {

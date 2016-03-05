@@ -1,3 +1,3 @@
-import Spanan from "./spanan";
+import Spanan from "./facade";
 
 window.spanan = new Spanan();
