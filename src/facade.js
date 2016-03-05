@@ -1,11 +1,17 @@
 import Wrapper from "./wrapper";
 
-export default class Spanan {
-  constructor() {
+export default class {
+  constructor(ctx = window || global) {
+    this.ctx = ctx;
+    this.ctx.spanan = this;
     this.exportedFunctions = Object.create(null);
     this.wrappers = new Map();
     this.messageListener = this.messageListener.bind(this);
     this.isListening = false;
+  }
+
+  destroy() {
+    delete this.ctx.spanan;
   }
 
   registerWrapper(wrapper) {
@@ -107,7 +113,7 @@ export default class Spanan {
     this.startListening();
 
     if ( typeof target === "string" ) {
-      target = Spanan.createIframe(target);
+      target = this.constructor.createIframe(target);
     }
 
     const wrapper = new Wrapper(target);

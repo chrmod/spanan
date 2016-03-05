@@ -1,12 +1,17 @@
 /*eslint-env mocha */
 /*global chai */
 
-import _ from "../../index";
+import Spanan from "../../facade";
 
 var expect = chai.expect;
 
 describe("Integration - same window", () => {
+  let spanan;
   let agent;
+
+  before(function () {
+    spanan = new Spanan();
+  });
 
   beforeEach(() => {
     agent = spanan.import(window);
@@ -14,6 +19,10 @@ describe("Integration - same window", () => {
 
   afterEach(() => {
     spanan.stopListening();
+  });
+
+  after(function () {
+    spanan.destroy();
   });
 
   it("function with no return value", () => {

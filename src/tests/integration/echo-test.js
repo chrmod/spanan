@@ -1,12 +1,17 @@
 /*eslint-env mocha */
 /*global chai */
 
-import _ from "../../index";
+import Spanan from "../../facade";
 
 var expect = chai.expect;
 
 describe("Integration - echo page", () => {
+  let spanan;
   let agent;
+
+  before(function () {
+    spanan = new Spanan();
+  });
 
   beforeEach(() => {
     agent = spanan.import("fixtures/echo.html");
@@ -15,6 +20,14 @@ describe("Integration - echo page", () => {
   afterEach(() => {
     document.body.removeChild(document.querySelector("iframe.spanan"));
     spanan.stopListening();
+  });
+
+  afterEach(() => {
+    spanan.stopListening();
+  });
+
+  after(function () {
+    spanan.destroy();
   });
 
   it("Boolean", () => {

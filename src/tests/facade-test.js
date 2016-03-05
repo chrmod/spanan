@@ -7,31 +7,29 @@ import Wrapper from "../wrapper";
 var expect = chai.expect;
 
 describe("Spanan", function () {
+  let spanan;
 
   beforeEach(() => {
-    this.spanan = new Spanan();
+    spanan = new Spanan();
   });
 
   afterEach(() => {
-    this.spanan.stopListening();
-    delete this.spanan;
+    spanan.stopListening();
+    spanan.destroy();
   });
 
   describe("#constructor", () => {
     it("sets empty wrappers dict", () => {
-      const spanan = new Spanan();
       expect(spanan).to.have.property("wrappers").that.deep.equal(new Map());
     });
 
     it("set isListening flag to false", function () {
-      const spanan = new Spanan();
       expect(spanan).to.have.property("isListening").to.be.false;
     });
   });
 
   describe("#registerWrapper", () => {
     it("puts wrapper on wrappers dict", () => {
-      const spanan = new Spanan();
       const wrapper = new Wrapper();
       spanan.registerWrapper(wrapper);
       expect(spanan.wrappers.get(wrapper.id)).to.equal(wrapper);
@@ -336,12 +334,12 @@ describe("Spanan", function () {
 
       beforeEach( () => {
         testFn = function () {};
-        this.spanan.export({ test: (...args) => testFn.apply(null, args) });
+        spanan.export({ test: (...args) => testFn.apply(null, args) });
       });
 
       it("returns true", () => {
         expect(
-          this.spanan.dispatchCall({ fnName: "test" })
+          spanan.dispatchCall({ fnName: "test" })
         ).to.be.true;
       });
 
@@ -353,23 +351,23 @@ describe("Spanan", function () {
           done();
         };
 
-        this.spanan.dispatchCall({ fnName: "test", fnArgs })
+        spanan.dispatchCall({ fnName: "test", fnArgs })
       });
 
       it("calls sendResponse with message and valuePromise", done => {
         let message = { fnName: "test", fnArgs: [] };
-        this.spanan.sendResponse = (msg, valuePromise) => {
+        spanan.sendResponse = (msg, valuePromise) => {
           expect(msg).to.equal(message);
           expect(valuePromise).to.be.instanceOf(Promise);
           done();
         }
-        this.spanan.dispatchCall(message);
+        spanan.dispatchCall(message);
       });
     });
 
     it("returns false if message did not match any exported function", () => {
       expect(
-        this.spanan.dispatchCall({ fnName: "test" })
+        spanan.dispatchCall({ fnName: "test" })
       ).to.be.false;
     });
   });
@@ -390,7 +388,7 @@ describe("Spanan", function () {
           });
           done();
         };
-        this.spanan.sendResponse(msg, valuePromise);
+        spanan.sendResponse(msg, valuePromise);
       });
     });
 
@@ -402,7 +400,7 @@ describe("Spanan", function () {
         let postMessageCalled = false;
         source.postMessage = () => { postMessageCalled = true };
 
-        this.spanan.sendResponse(msg, valuePromise);
+        spanan.sendResponse(msg, valuePromise);
 
         setTimeout( () => {
           expect(postMessageCalled).to.be.false;
