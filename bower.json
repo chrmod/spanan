@@ -1,21 +1,16 @@
 {
   "name": "spanan",
-  "main": "spanan.js",
-  "version": "0.0.1",
+  "main": "dist/spanan.js",
+  "version": "0.1.0",
   "authors": [
-    "chrmod <krzysztof.modras@gmail.com>"
+   "Krzysztof Jan Modras <krzysztof.modras@gmail.com>"
   ],
   "description": "Cross iframe communication made simple",
-  "moduleType": [
-    "globals"
-  ],
-  "license": "CC",
-  "private": true,
+  "moduleType": [],
+  "license": "MIT",
   "ignore": [
-    "**/.*",
     "node_modules",
     "bower_components",
-    "test",
     "tests"
   ],
   "dependencies": {},
@@ -24,5 +19,6 @@
     "chai-as-promised": "5.2.0",
     "mocha": "^2.4.5",
     "system.js": "^0.19.23"
-  }
+  },
+  "homepage": ""
 }

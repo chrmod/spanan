@@ -126,8 +126,3 @@ npm run build
 Before submiting a pull request, please first create an issue describing what
 and why you would like to change. This workflow will ensure the development
 direction.
-
-# License
-
-Copyright (c) 2015 Krzysztof Modras. Licensed Creative Commons
-[CC BY-NC-SA 3.0](http://creativecommons.org/licenses/by-nc-sa/3.0/).

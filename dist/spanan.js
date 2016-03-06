@@ -1,4 +1,5 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function (global){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -15,17 +16,30 @@ var _wrapper = require("./wrapper");
 
 var _wrapper2 = _interopRequireDefault(_wrapper);
 
-var Spanan = (function () {
-  function Spanan() {
-    _classCallCheck(this, Spanan);
+var _default = (function () {
+  function _default() {
+    var ctx = arguments.length <= 0 || arguments[0] === undefined ? window || global : arguments[0];
 
+    _classCallCheck(this, _default);
+
+    if (ctx.spanan) {
+      throw new Error("spanan already loaded");
+    }
+    this.ctx = ctx;
+    this.ctx.spanan = this;
     this.exportedFunctions = Object.create(null);
     this.wrappers = new Map();
     this.messageListener = this.messageListener.bind(this);
     this.isListening = false;
   }
 
-  _createClass(Spanan, [{
+  _createClass(_default, [{
+    key: "destroy",
+    value: function destroy() {
+      this.stopListening();
+      delete this.ctx.spanan;
+    }
+  }, {
     key: "registerWrapper",
     value: function registerWrapper(wrapper) {
       this.wrappers.set(wrapper.id, wrapper);
@@ -112,14 +126,14 @@ var Spanan = (function () {
     key: "startListening",
     value: function startListening() {
       if (!this.isListening) {
-        window.addEventListener("message", this.messageListener);
+        this.ctx.addEventListener("message", this.messageListener);
         this.isListening = true;
       }
     }
   }, {
     key: "stopListening",
     value: function stopListening() {
-      window.removeEventListener("message", this.messageListener);
+      this.ctx.removeEventListener("message", this.messageListener);
       this.isListening = false;
     }
   }, {
@@ -134,7 +148,7 @@ var Spanan = (function () {
       this.startListening();
 
       if (typeof target === "string") {
-        target = Spanan.createIframe(target);
+        target = this.constructor.createIframe(target);
       }
 
       var wrapper = new _wrapper2["default"](target);
@@ -170,11 +184,12 @@ var Spanan = (function () {
     }
   }]);
 
-  return Spanan;
+  return _default;
 })();
 
-exports["default"] = Spanan;
+exports["default"] = _default;
 module.exports = exports["default"];
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./wrapper":5}],2:[function(require,module,exports){
 "use strict";
 
@@ -184,7 +199,7 @@ var _facade = require("./facade");
 
 var _facade2 = _interopRequireDefault(_facade);
 
-window.spanan = new _facade2["default"]();
+new _facade2["default"]();
 },{"./facade":1}],3:[function(require,module,exports){
 "use strict";
 

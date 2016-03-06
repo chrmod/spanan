@@ -1,6 +1,6 @@
 {
   "name": "spanan",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Cross iframe communication made easy",
   "main": "spanan.js",
   "directories": {
@@ -11,7 +11,7 @@
     "build": "rm -rf dist; BROCCOLI_ENV=production broccoli build dist"
   },
   "author": "Krzysztof Jan Modras <krzysztof.modras@gmail.com>",
-  "license": "CC",
+  "license": "MIT",
   "devDependencies": {
     "babel": "^6.3.26",
     "broccoli": "^0.16.9",
