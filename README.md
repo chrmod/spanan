@@ -109,7 +109,17 @@ both.
   That means when you pass an object it will be changed into JSON using
   `JSON.stringify`, thus it will lose its prototype.
 
+# Development
+
+Test runner (testem) is integratrated with development server:
+
+```
+npm start
+```
+
 # Tests
+
+Run tests in CI mode by:
 
 ```
 npm test

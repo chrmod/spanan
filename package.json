@@ -2,19 +2,20 @@
   "name": "spanan",
   "version": "0.1.0",
   "description": "Cross iframe communication made easy",
-  "main": "spanan.js",
-  "directories": {
-    "test": "tests"
-  },
   "scripts": {
+    "postinstall": "bower install",
+    "buildtests": "broccoli build build",
+    "cleantests": "rm -rf build",
     "start": "testem",
     "test": "testem ci",
-    "build": "rm -rf dist; BROCCOLI_ENV=production broccoli build dist"
+    "prebuild": "rm -rf dist",
+    "build": "BROCCOLI_ENV=production broccoli build dist"
   },
   "author": "Krzysztof Jan Modras <krzysztof.modras@gmail.com>",
   "license": "MIT",
   "devDependencies": {
     "babel": "^6.3.26",
+    "bower": "^1.7.7",
     "broccoli": "^0.16.9",
     "broccoli-babel-transpiler": "^5.5.0",
     "broccoli-browserify": "^0.1.0",
