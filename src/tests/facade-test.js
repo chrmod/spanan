@@ -280,7 +280,9 @@ describe("Spanan", function () {
       context("iframe loaded", function () {
 
         beforeEach(function () {
-          subject.ready = Promise.resolve;
+          subject.ready = function () {
+            return Promise.resolve();
+          };
         });
 
         it("convert function calls into postMessage calls on iframe", function (done) {

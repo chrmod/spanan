@@ -144,8 +144,16 @@ describe("Wrapper", function () {
     });
 
     context("target ready", function () {
+      var call;
+
       beforeEach(() => {
-        subject().ready = Promise.resolve;
+        subject().ready = function () {
+          return Promise.resolve();
+        };
+      });
+
+      afterEach(function () {
+        clearTimeout(call.rejectTimeout);
       });
 
       it("calls 'postMessage' with Transfer", function (done) {
@@ -158,14 +166,14 @@ describe("Wrapper", function () {
           done();
         };
 
-        subject().send(fnName, fnArgs);
+        call = subject().send(fnName, fnArgs);
       });
 
       it("calls 'postMessage' on target", function (done) {
         target.postMessage = function () {
           done();
         };
-        subject().send("test");
+        call = subject().send("test");
       });
 
       it("calls postMessage with wildcard as targetOrigin", function (done) {
@@ -174,11 +182,11 @@ describe("Wrapper", function () {
             done();
           }
         };
-        subject().send("test");
+        call = subject().send("test");
       });
 
       it("subscribe callback on its callback list", function (done) {
-        subject().send("test");
+        call = subject().send("test");
         setTimeout(function () {
           expect(Object.keys(subject()._callbacks)).to.have.length(1);
           done();
@@ -186,12 +194,12 @@ describe("Wrapper", function () {
       });
 
       it("promise get resolved after callback being called", function (done) {
-        var promise = subject().send("test");
+        call = subject().send("test");
 
-        promise.then(done);
+        call.then(done);
 
         setTimeout(function () {
-          subject()._callbacks[promise.transferId]();
+          subject()._callbacks[call.transferId]();
         }, 10);
       });
     });

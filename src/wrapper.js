@@ -20,12 +20,12 @@ export default class {
 
   send(fnName, fnArgs) {
     var transfer = new Transfer(fnName, fnArgs),
-        promise;
+        promise, rejectTimeout;
 
     transfer.wrapperId = this.id;
 
     promise = new Promise( (resolve, reject) => {
-      var rejectTimeout = setTimeout(reject.bind(null, "timeout"), this.timeout);
+      rejectTimeout = setTimeout(reject.bind(null, "timeout"), this.timeout);
 
       this.ready().then( () => {
         this.target.postMessage(transfer.toString(), "*");
@@ -38,6 +38,7 @@ export default class {
     });
 
     promise.transferId = transfer.id;
+    promise.rejectTimeout = rejectTimeout;
 
     return promise;
   }
