@@ -1,7 +1,8 @@
 {
   "framework": "mocha",
   "launch_in_dev": [
-    "Firefox"
+    "Firefox",
+    "Chrome"
   ],
   "launch_in_ci": [
     "Firefox"

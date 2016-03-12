@@ -81,6 +81,11 @@ a value, the client promise will be resolved with that value.
   only one direction. Future releases of Spanan will provide two way
   communication channel.
 
+# Requirements
+
+Spanan uses Javascript Proxy API so require will work in Firefox >= 40 or
+Chromium >= 49.
+
 # Installation
 
 In your html document add:
