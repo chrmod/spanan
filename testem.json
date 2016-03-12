@@ -3,6 +3,9 @@
   "launch_in_dev": [
     "Firefox"
   ],
+  "launch_in_ci": [
+    "Firefox"
+  ],
   "test_page": "tests/index.html",
   "before_tests": "rm -rf build; broccoli build build",
   "on_exit": "rm -rf tmp build",

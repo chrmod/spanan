@@ -1,4 +1,4 @@
-# Spanan
+# Spanan [![Build Status](https://travis-ci.org/chrmod/spanan.svg?branch=master)](https://travis-ci.org/chrmod/spanan)
 
 Spanan is a JavaScript library that simplify cross **iframe** communication.
 

@@ -7,7 +7,8 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "testem",
+    "start": "testem",
+    "test": "testem ci",
     "build": "rm -rf dist; BROCCOLI_ENV=production broccoli build dist"
   },
   "author": "Krzysztof Jan Modras <krzysztof.modras@gmail.com>",
