@@ -19,6 +19,7 @@
     "broccoli": "^0.16.9",
     "broccoli-babel-transpiler": "^5.5.0",
     "broccoli-browserify": "^0.1.0",
+    "broccoli-cli": "^1.0.0",
     "broccoli-env": "0.0.1",
     "broccoli-rename-files": "0.0.3",
     "broccoli-source": "^1.1.0",

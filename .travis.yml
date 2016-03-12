@@ -6,18 +6,14 @@ node_js:
 addons:
   firefox: "44.0"
 
+branches:
+  only:
+    - master
+
 cache:
   directories:
     - node_modules
     - bower_components
-
-before_install:
-  - npm install -g bower
-  - npm install -g broccoli-cli
-
-install:
-  - npm install
-  - bower install
 
 before_script:
   - "export DISPLAY=:99.0"
