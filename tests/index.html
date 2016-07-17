@@ -25,6 +25,7 @@
       "transfer-test.js",
       "integration/echo-test.js",
       "integration/same-window-test.js",
+      "integration/noproxy-test.js",
     ];
     Promise.all(tests.map(function (url) {
       return System.import("../build/test-files/"+url);

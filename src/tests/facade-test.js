@@ -253,7 +253,7 @@ describe("Spanan", function () {
 
     });
 
-    describe("return proxy object", function () {
+    describe("return Wrapper", function () {
       var subject;
 
       beforeEach(function () {
@@ -268,45 +268,7 @@ describe("Spanan", function () {
         expect(subject).to.have.property("target")
                        .that.eql(spananIframe().contentWindow);
       });
-
-      it("calls on proxy object properties return a promise", function () {
-        expect(subject.nonExistingMethod()).to.be.instanceof(Promise);
-      });
-
-      it("calls to undefined methods return rejected promise", function () {
-        return expect(subject.nonexistingmethod()).to.eventually.be.rejected;
-      });
-
-      context("iframe loaded", function () {
-
-        beforeEach(function () {
-          subject.ready = function () {
-            return Promise.resolve();
-          };
-        });
-
-        it("convert function calls into postMessage calls on iframe", function (done) {
-          spananIframe().contentWindow.postMessage = function () {
-            done();
-          };
-          subject.nonExistingMethod();
-        });
-
-        it("calls to 'echo' methods return promise resolved to passed value", function (done) {
-          var promise = subject.echo("test");
-
-          promise.then(function (response) {
-            expect(response).to.equal("test");
-            done();
-          });
-
-          setTimeout(function () {
-            subject._callbacks[promise.transferId]("test");
-          }, 250);
-        });
-      });
     });
-
   });
 
   describe("#dispatchCall", () => {
