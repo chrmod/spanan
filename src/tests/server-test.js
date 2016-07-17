@@ -3,7 +3,7 @@
 
 import Server from "../server";
 import Wrapper from "../wrapper";
-import Transfer from "../transfer";
+import { RequestTransfer } from "../transfer";
 
 var expect = chai.expect;
 
@@ -231,12 +231,17 @@ describe("Server", function () {
         const msg = { source, id: 1, wrapperId: 2 };
         source.postMessage = (content) => {
           let responseTransfer = JSON.parse(content);
-          expect(responseTransfer).to.deep.equal({
-            transferId: msg.id,
-            response: returnedValue,
-            wrapperId: msg.wrapperId
-          });
-          done();
+          try {
+            expect(responseTransfer)
+              .to.have.property('transferId').equal(msg.id);
+            expect(responseTransfer)
+              .to.have.property('response').equal(returnedValue);
+            expect(responseTransfer)
+              .to.have.property('wrapperId').equal(msg.wrapperId);
+            done();
+          } catch(e) {
+            done(e);
+          }
         };
         server.sendResponse(msg, valuePromise);
       });

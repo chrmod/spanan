@@ -1,3 +1,5 @@
+import { ResponseTransfer } from "./transfer";
+
 export default class {
 
   constructor(ctx) {
@@ -81,17 +83,9 @@ export default class {
   }
 
   sendResponse(msg, valuePromise) {
-    let responseTransfer = {
-      transferId: msg.id,
-      wrapperId: msg.wrapperId
-    };
-
-    valuePromise.then( (value) => {
-      responseTransfer.response = value;
-
-      let response = JSON.stringify(responseTransfer);
-
-      msg.source.postMessage(response, "*");
+    return valuePromise.then(value => {
+      const responseTransfer = new ResponseTransfer(msg, value);
+      msg.source.postMessage(responseTransfer.toString(), "*");
     });
   }
 };

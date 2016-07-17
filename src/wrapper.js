@@ -1,4 +1,4 @@
-import Transfer from "./transfer";
+import { RequestTransfer } from "./transfer";
 import uuid from "./uuid";
 
 const loadingPromises = new WeakMap();
@@ -19,7 +19,7 @@ export default class {
   }
 
   send(fnName, ...fnArgs) {
-    var transfer = new Transfer(fnName, fnArgs),
+    var transfer = new RequestTransfer(fnName, fnArgs),
         promise, rejectTimeout;
 
     promise = new Promise( (resolve, reject) => {
@@ -72,7 +72,7 @@ export default class {
     let loadingPromise = loadingPromises.get(this);
 
     if (!loadingPromise) {
-      const initTransfer = new Transfer("-spanan-init-", []);
+      const initTransfer = new RequestTransfer("-spanan-init-", []);
 
       loadingPromise = new Promise(resolve => {
         let interval;

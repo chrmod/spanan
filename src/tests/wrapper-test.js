@@ -2,7 +2,7 @@
 /*global chai */
 
 import Wrapper from "../wrapper";
-import Transfer from "../transfer";
+import { RequestTransfer } from "../transfer";
 
 var expect = chai.expect;
 
@@ -237,7 +237,7 @@ describe("Wrapper", function () {
 
   describe("#postTransfer", function () {
     it("calls postMessage on target with stringified transfer", function (done) {
-      const transfer = new Transfer();
+      const transfer = new RequestTransfer();
       subject().target.postMessage = (str, tagetOrigin) => {
         if (str === transfer.toString() || targetOrigin === "*") {
           done();
@@ -249,7 +249,7 @@ describe("Wrapper", function () {
     });
 
     it("assigns wrapperId on a transfer", function () {
-      expect(subject().postTransfer(new Transfer()))
+      expect(subject().postTransfer(new RequestTransfer()))
           .to.have.property('wrapperId')
           .that.equals(subject().id);
     });
