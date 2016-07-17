@@ -35,17 +35,6 @@ export default class {
   dispatchMessage(ev) {
     let msg;
 
-    if ( typeof ev.data === "string" && ev.data.indexOf("spanan?") === 0 ) {
-      let wrapperId = ev.data.split("?")[1];
-
-      if (this.wrappers.has(wrapperId)) {
-        this.wrappers.get(wrapperId).activate();
-      } else {
-        ev.source.postMessage(ev.data, "*");
-      }
-      return;
-    }
-
     try {
       msg = JSON.parse(ev.data);
     } catch (e) {
@@ -72,7 +61,11 @@ export default class {
   }
 
   dispatchCall(msg) {
-    const exportedFunction = this.exportedFunctions[msg.fnName];
+    let exportedFunction = this.exportedFunctions[msg.fnName];
+
+    if (msg.fnName === "-spanan-init-") {
+      exportedFunction = () => true;
+    }
 
     if ( !exportedFunction ) {
       return false;

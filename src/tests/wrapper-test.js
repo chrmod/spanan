@@ -64,9 +64,15 @@ describe("Wrapper", function () {
   });
 
   describe("#ready", () => {
+    function resolveAllCallbacks() {
+      Object.keys(subject()._callbacks).forEach(callbackId => {
+        subject()._callbacks[callbackId]();
+        delete subject()._callbacks[callbackId];
+      });
+    }
     afterEach(() => {
       // make sure that init callback is called and loading interval is stopped
-      subject()._callbacks[0]();
+      resolveAllCallbacks();
     });
 
     it("returns promise", () => {
@@ -75,20 +81,23 @@ describe("Wrapper", function () {
 
     it("postMessage on wrapped object with init string", done => {
       target = {
-        postMessage(msg) { msg === `spanan?${subject().id}` ? done() : null; }
+        postMessage(msg) {
+          JSON.parse(msg).fnName === "-spanan-init-" ? done() : null;
+        }
       };
 
       subject().ready();
     });
 
-    it("assign 0 callback", () => {
+    it("assigns first callback", () => {
+      expect(Object.keys(subject()._callbacks)).to.have.length(0);
       subject().ready();
-      expect(subject()._callbacks).to.have.any.key('0');
+      expect(Object.keys(subject()._callbacks)).to.have.length(1);
     });
 
     it("gets resolved on callback", () => {
       const loadingPromise = subject().ready();
-      subject()._callbacks[0]();
+      resolveAllCallbacks();
       return loadingPromise;
     });
 
@@ -108,12 +117,11 @@ describe("Wrapper", function () {
       subject().ready();
 
       setTimeout(() => {
-        subject()._callbacks[0]();
+        resolveAllCallbacks();
         expect(sendCount).to.eql(3);
         done();
       }, 350);
     });
-
   });
 
   describe("#dispatchMessage", () => {
@@ -128,13 +136,6 @@ describe("Wrapper", function () {
       subject()._callbacks[transferId] = () => {};
       subject().dispatchMessage({ transferId });
       expect(subject()._callbacks).to.not.have.key(transferId);
-    });
-  });
-
-  describe("#activate", () => {
-    it("calls callback 0", done => {
-      subject()._callbacks[0] = () => done();
-      subject().activate();
     });
   });
 
@@ -231,6 +232,26 @@ describe("Wrapper", function () {
 
         expect(called).to.eql(false);
       });
+    });
+  });
+
+  describe("#postTransfer", function () {
+    it("calls postMessage on target with stringified transfer", function (done) {
+      const transfer = new Transfer();
+      subject().target.postMessage = (str, tagetOrigin) => {
+        if (str === transfer.toString() || targetOrigin === "*") {
+          done();
+        } else {
+          done("wrong arguments");
+        }
+      };
+      subject().postTransfer(transfer);
+    });
+
+    it("assigns wrapperId on a transfer", function () {
+      expect(subject().postTransfer(new Transfer()))
+          .to.have.property('wrapperId')
+          .that.equals(subject().id);
     });
   });
 });

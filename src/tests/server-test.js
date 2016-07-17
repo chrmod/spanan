@@ -84,17 +84,6 @@ describe("Server", function () {
 
   describe("#dispatchMessage", function () {
 
-    context("on init message", function () {
-      it("calls activate on wrapper", done => {
-        let wrapper = {
-          id: "1",
-          activate: () => done(),
-        };
-        server.wrappers.set(wrapper.id, wrapper);
-        server.dispatchMessage({ data: `spanan?${wrapper.id}` });
-      });
-    });
-
     context("on spanan request", function () {
       it("calls dispatchCall", done => {
         server.dispatchCall = () => done();
