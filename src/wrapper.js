@@ -1,4 +1,4 @@
-import Transfer from "./transfer";
+import { RequestTransfer } from "./transfer";
 import uuid from "./uuid";
 
 const loadingPromises = new WeakMap();
@@ -19,16 +19,14 @@ export default class {
   }
 
   send(fnName, ...fnArgs) {
-    var transfer = new Transfer(fnName, fnArgs),
+    var transfer = new RequestTransfer(fnName, fnArgs),
         promise, rejectTimeout;
-
-    transfer.wrapperId = this.id;
 
     promise = new Promise( (resolve, reject) => {
       rejectTimeout = setTimeout(reject.bind(null, "timeout"), this.timeout);
 
       this.ready().then( () => {
-        this.target.postMessage(transfer.toString(), "*");
+        this.postTransfer(transfer);
 
         this._callbacks[transfer.id] = function () {
           clearTimeout(rejectTimeout);
@@ -70,28 +68,31 @@ export default class {
     }
   }
 
-  activate() {
-    this._callbacks[0]();
-  }
-
   ready() {
     let loadingPromise = loadingPromises.get(this);
 
     if (!loadingPromise) {
+      const initTransfer = new RequestTransfer("-spanan-init-", []);
+
       loadingPromise = new Promise(resolve => {
         let interval;
-        this._callbacks[0] = () => {
-          resolve();
+        this._callbacks[initTransfer.id] = () => {
           clearInterval(interval);
-        }
-        interval = setInterval( () => {
-          this.target.postMessage(`spanan?${this.id}`, "*");
-        }, 100);
+          resolve();
+        };
+
+        interval = setInterval(this.postTransfer.bind(this, initTransfer), 100);
       });
 
       loadingPromises.set(this, loadingPromise);
     }
 
     return loadingPromise;
+  }
+
+  postTransfer(transfer) {
+    transfer.wrapperId = this.id;
+    this.target.postMessage(transfer.toString(), "*");
+    return transfer;
   }
 }
