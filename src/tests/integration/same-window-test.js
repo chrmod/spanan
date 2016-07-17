@@ -18,7 +18,7 @@ describe("Integration - same window", () => {
   });
 
   afterEach(() => {
-    spanan.stopListening();
+    spanan.server.stopListening();
   });
 
   after(function () {

@@ -19,11 +19,11 @@ describe("Integration - noproxy", function () {
 
   afterEach(() => {
     document.body.removeChild(document.querySelector("iframe.spanan"));
-    spanan.stopListening();
+    spanan.server.stopListening();
   });
 
   afterEach(() => {
-    spanan.stopListening();
+    spanan.server.stopListening();
   });
 
   after(function () {
