@@ -124,21 +124,7 @@ export default class {
 
     this.registerWrapper(wrapper);
 
-    const handler = {
-      get(target, name) {
-        return name in target ?
-          target[name] :
-          this.send(name);
-      },
-
-      send(name) {
-        return function () {
-          return wrapper.send(name, arguments);
-        };
-      }
-    };
-
-    return new Proxy(wrapper, handler);
+    return wrapper;
   }
 
   static createIframe(url) {

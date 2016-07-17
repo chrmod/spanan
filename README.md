@@ -42,7 +42,7 @@ spanan.export({
 On client side you need to inform Spanan from where it should import functions:
 
 ```js
-var myLocalStorage = spanan.import("http://my-local-storage.com/");
+var myLocalStorage = spanan.import("http://my-local-storage.com/").createProxy();
 ```
 
 Under the hood Spanan will create invisible iframe and grant access to it via
@@ -63,6 +63,15 @@ myLocalStorage.set('test', 'spanan is cool').then(function () {
 }).then(function (value) {
   console.log(value); // => 'spanan is cool'
 });
+```
+
+## no-proxy mode
+
+In case Javascript Proxies are not available there is a no-proxy mode:
+
+```js
+var myLocalStorage = spanan.import('http://my-local-storage.com/');
+myLocalStorage.send('set', 'test', 'spanan is cool');
 ```
 
 # How it works?

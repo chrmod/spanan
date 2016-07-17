@@ -52,6 +52,17 @@ describe("Wrapper", function () {
     });
   });
 
+  describe("#createProxy", function () {
+
+    it("calls on proxy object properties return a promise", function () {
+      expect(subject().createProxy().nonExistingMethod()).to.be.instanceof(Promise);
+    });
+
+    it("calls to undefined methods return rejected promise", function () {
+      return expect(subject().createProxy().nonexistingmethod()).to.eventually.be.rejected;
+    });
+  });
+
   describe("#ready", () => {
     afterEach(() => {
       // make sure that init callback is called and loading interval is stopped

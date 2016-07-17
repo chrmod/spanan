@@ -18,7 +18,7 @@ export default class {
     }
   }
 
-  send(fnName, fnArgs) {
+  send(fnName, ...fnArgs) {
     var transfer = new Transfer(fnName, fnArgs),
         promise, rejectTimeout;
 
@@ -41,6 +41,25 @@ export default class {
     promise.rejectTimeout = rejectTimeout;
 
     return promise;
+  }
+
+  createProxy() {
+    const wrapper = this;
+    const handler = {
+      get(target, name) {
+        return name in target ?
+          target[name] :
+          this.send(name);
+      },
+
+      send(name) {
+        return function () {
+          return wrapper.send.apply(wrapper, [name, ...arguments]);
+        };
+      }
+    };
+
+    return new Proxy(this, handler);
   }
 
   dispatchMessage(response) {

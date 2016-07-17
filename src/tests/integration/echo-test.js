@@ -14,7 +14,7 @@ describe("Integration - echo page", () => {
   });
 
   beforeEach(() => {
-    agent = spanan.import("fixtures/echo.html");
+    agent = spanan.import("fixtures/echo.html").createProxy();
   });
 
   afterEach(() => {
