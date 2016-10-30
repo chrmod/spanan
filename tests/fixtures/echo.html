@@ -1,7 +1,17 @@
 <!-- This stub document responds for one spanan method 'echo' -->
+<div id="test"></div>
 <script src="../../build/spanan.js"></script>
 <script>
+  var config = {};
+  var captured = (/config=([^&]+)/.exec(window.location) || [])[1];
+  try {
+    config = JSON.parse(decodeURIComponent(captured));
+  } catch(e) {
+  }
   spanan.export({
-    echo(val) { return val; }
-  });
+    echo(val) {
+      document.getElementById("test").innerHTML = val;
+      return val;
+    }
+  }, config);
 </script>

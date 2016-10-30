@@ -1,13 +1,28 @@
-import { RequestTransfer } from "./transfer";
+import { RequestTransfer, ResponseTransfer } from "./transfer";
 import uuid from "./uuid";
 
 const loadingPromises = new WeakMap();
 
 export default class {
+  /**
+   * options = {
+   *   timeout: 1000,
+   *   meta: {
+   *
+   *   },
+   *   requestProperties: {
+   *
+   *   }
+   * }
+   */
   constructor(target, options = {}) {
     this._isLoaded = false;
     this._callbacks = Object.create(null);
     this.timeout = options.timeout || 1000;
+    this.requestConfig = {
+      meta: options.meta,
+      requestProperties: options.requestProperties,
+    };
     this.id = uuid();
 
     if ( target instanceof HTMLElement && target.nodeName === "IFRAME" ) {
@@ -18,14 +33,22 @@ export default class {
     }
   }
 
-  send(fnName, ...fnArgs) {
-    var transfer = new RequestTransfer(fnName, fnArgs),
-        promise, rejectTimeout;
+  createRequestTransfer(fnName, fnArgs) {
+    return new RequestTransfer(fnName, fnArgs, this.requestConfig);
+  }
 
-    promise = new Promise( (resolve, reject) => {
+  send(fnName, ...fnArgs) {
+    const transfer = this.createRequestTransfer(fnName, fnArgs);
+    let rejectTimeout;
+
+    const promise = new Promise( (resolve, reject) => {
       rejectTimeout = setTimeout(reject.bind(null, "timeout"), this.timeout);
 
-      this.ready().then( () => {
+      if (!this.loadingPromise) {
+        this.loadingPromise = this.ready();
+      }
+
+      this.loadingPromise.then( () => {
         this.postTransfer(transfer);
 
         this._callbacks[transfer.id] = function () {
@@ -62,37 +85,36 @@ export default class {
 
   dispatchMessage(response) {
     const transferId = response.transferId;
-    if (transferId in this._callbacks) {
-      this._callbacks[transferId].call(null, response.response);
+    const callback = this._callbacks[transferId];
+
+    if (callback) {
+      callback.call(null, response.response);
       delete this._callbacks[transferId];
     }
   }
 
   ready() {
-    let loadingPromise = loadingPromises.get(this);
+    const initTransfer = this.createRequestTransfer("-spanan-init-", []);
+    let interval;
 
-    if (!loadingPromise) {
-      const initTransfer = new RequestTransfer("-spanan-init-", []);
+    const loadingPromise = new Promise(resolve => {
+      this._callbacks[initTransfer.id] = () => {
+        loadingPromise.stop();
+        resolve();
+      };
 
-      loadingPromise = new Promise(resolve => {
-        let interval;
-        this._callbacks[initTransfer.id] = () => {
-          clearInterval(interval);
-          resolve();
-        };
+      interval = setInterval(this.postTransfer.bind(this), 100, initTransfer);
+    });
 
-        interval = setInterval(this.postTransfer.bind(this, initTransfer), 100);
-      });
-
-      loadingPromises.set(this, loadingPromise);
-    }
+    loadingPromise.stop = clearInterval.bind(null, interval);
 
     return loadingPromise;
   }
 
   postTransfer(transfer) {
     transfer.wrapperId = this.id;
-    this.target.postMessage(transfer.toString(), "*");
+    const message = transfer.toString();
+    this.target.postMessage(message, "*");
     return transfer;
   }
 }

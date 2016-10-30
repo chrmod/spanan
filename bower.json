@@ -3,7 +3,7 @@
   "main": "dist/spanan.js",
   "version": "0.1.0",
   "authors": [
-   "Krzysztof Jan Modras <krzysztof.modras@gmail.com>"
+    "Krzysztof Jan Modras <krzysztof.modras@gmail.com>"
   ],
   "description": "Cross iframe communication made simple",
   "moduleType": [],
@@ -17,8 +17,8 @@
   "devDependencies": {
     "chai": "3.5.0",
     "chai-as-promised": "5.2.0",
-    "mocha": "^2.4.5",
-    "system.js": "^0.19.23"
+    "system.js": "^0.19.23",
+    "mocha": "^3.1.2"
   },
   "homepage": ""
 }

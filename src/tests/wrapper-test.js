@@ -101,12 +101,6 @@ describe("Wrapper", function () {
       return loadingPromise;
     });
 
-    it("called twice return same promise object", () => {
-      const promise1 = subject().ready();
-      const promise2 = subject().ready();
-      expect(promise1).to.equal(promise2);
-    });
-
     it("keeps sending init string every 100ms until getting response", (done) => {
       let sendCount = 0;
 
@@ -237,7 +231,7 @@ describe("Wrapper", function () {
 
   describe("#postTransfer", function () {
     it("calls postMessage on target with stringified transfer", function (done) {
-      const transfer = new RequestTransfer();
+      const transfer = new RequestTransfer("test", []);
       subject().target.postMessage = (str, tagetOrigin) => {
         if (str === transfer.toString() || targetOrigin === "*") {
           done();
@@ -249,7 +243,7 @@ describe("Wrapper", function () {
     });
 
     it("assigns wrapperId on a transfer", function () {
-      expect(subject().postTransfer(new RequestTransfer()))
+      expect(subject().postTransfer(new RequestTransfer("test", [])))
           .to.have.property('wrapperId')
           .that.equals(subject().id);
     });

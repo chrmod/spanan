@@ -8,27 +8,34 @@ export default class {
     }
     this.ctx = ctx;
     this.ctx.spanan = this;
-    this.server = new Server(ctx);
   }
 
   destroy() {
-    this.server.stopListening();
+    if (this.server) {
+      this.server.stopListening();
+    }
     delete this.ctx.spanan;
   }
 
-  export(functions) {
+  export(functions, config) {
+    if (!this.server) {
+      this.server = new Server(this.ctx, config);
+    }
     this.server.setup(functions);
     this.server.startListening();
   }
 
-  import(target) {
+  import(target, config = {}) {
+    if (!this.server) {
+      this.server = new Server(this.ctx);
+    }
     this.server.startListening();
 
     if ( typeof target === "string" ) {
       target = this.constructor.createIframe(target);
     }
 
-    const wrapper = new Wrapper(target);
+    const wrapper = new Wrapper(target, config);
 
     this.server.registerWrapper(wrapper);
 

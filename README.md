@@ -74,6 +74,52 @@ var myLocalStorage = spanan.import('http://my-local-storage.com/');
 myLocalStorage.send('set', 'test', 'spanan is cool');
 ```
 
+## passing metadata and alterning default properties
+
+Sometimes it may not be possible to distinguish spanan messages comming from
+multiple clients (eg. same iframe objects being imported multiple times). Thus
+it may come usefull to add some metadata to spanan messages or to change
+default message property names.
+
+Example:
+```js
+var myLocalStorage = spanan.import('http://my-local-storage.com/', {
+  meta: {
+    target: 'spanan',
+    module: 'test',
+  },
+  requestProperties: {
+    fnName: 'action',
+    fnArgs: 'args'
+  }
+}).createProxy();
+myLocalStorage.set('test', 'spanan is cool');
+```
+
+It will result in messages looking like this:
+
+```js
+{
+  target: 'spanan',
+  module: 'test',
+  action: 'test',
+  args: ['spanan is cool'],
+  id: '<random-id>',
+  wrapperId: '<random-id>'
+}
+```
+
+While regular message would look like thus:
+
+```js
+{
+  fnName: 'test',
+  fnArgs: ['spanan is cool'],
+  id: '<random-id>',
+  wrapperId: '<random-id>'
+}
+```
+
 # How it works?
 
 Under the hood Spanan wraps `window.postMessage` (overcomimg some of its
