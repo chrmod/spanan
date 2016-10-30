@@ -40,6 +40,7 @@ describe("Facade", function () {
       // removes previous instance
       spanan.destroy();
       spanan = new Spanan(ctx);
+      spanan.export({});
     });
 
     it("deletes spanan from its context", function () {
@@ -110,9 +111,16 @@ describe("Facade", function () {
       expect(spanan.server).to.have.deep.property("exportedFunctions.test", test);
     });
 
-    it("calls #startListening", function (done) {
-      spanan.server.startListening = function () { done(); };
+    it("creates new server", function () {
+      expect(spanan.server).to.equal(undefined);
       spanan.export({});
+      expect(spanan.server).to.be.ok;
+    });
+
+    it("passes config to server", function () {
+      const config = { meta: { test: true } };
+      spanan.export({}, config);
+      expect(spanan.server.config).to.equal(config);
     });
   });
 
@@ -130,16 +138,36 @@ describe("Facade", function () {
       return document.querySelector("iframe.spanan");
     }
 
+    it("creates new server", function () {
+      expect(spanan.server).to.equal(undefined);
+      spanan.import();
+      expect(spanan.server).to.be.ok;
+    });
+
     it("calls #startListening", function (done) {
-      spanan.server.startListening = function () { done(); };
+      // mock server
+      spanan.server = {
+        startListening: done,
+        registerWrapper() {},
+        stopListening() {},
+      };
       spanan.import();
     });
 
     it("calls #registerWrapper with a Wrapper object", done => {
-      spanan.server.registerWrapper = wrapper => {
-        expect(wrapper).to.be.instanceOf(Wrapper);
-        done();
-      }
+      spanan.server = {
+        startListening() {},
+        stopListening() {},
+        registerWrapper(wrapper) {
+          try {
+            expect(wrapper).to.be.instanceOf(Wrapper);
+          } catch(e) {
+            done(e);
+            return;
+          }
+          done();
+        },
+      };
       spanan.import(iframeURL);
     });
 

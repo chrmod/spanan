@@ -1,10 +1,11 @@
-import { ResponseTransfer } from "./transfer";
+import { BaseTransfer, ResponseTransfer, RequestTransfer } from "./transfer";
 
 export default class {
 
-  constructor(ctx) {
+  constructor(ctx, config) {
     this.ctx = ctx;
-    this.messageListener = this.messageListener.bind(this);
+    this.config = config;
+    this.dispatchMessage = this.dispatchMessage.bind(this);
     this.exportedFunctions = Object.create(null);
     this.isListening = false;
     this.wrappers = new Map();
@@ -16,13 +17,13 @@ export default class {
 
   startListening() {
     if (!this.isListening) {
-      this.ctx.addEventListener("message", this.messageListener);
+      this.ctx.addEventListener("message", this.dispatchMessage);
       this.isListening = true;
     }
   }
 
   stopListening() {
-    this.ctx.removeEventListener("message", this.messageListener);
+    this.ctx.removeEventListener("message", this.dispatchMessage);
     this.isListening = false;
   }
 
@@ -30,33 +31,28 @@ export default class {
     this.wrappers.set(wrapper.id, wrapper);
   }
 
-  messageListener(ev) {
-    this.dispatchMessage(ev);
-  }
-
   dispatchMessage(ev) {
-    let msg;
+    let transfer;
 
     try {
-      msg = JSON.parse(ev.data);
+      transfer = BaseTransfer.fromString(ev.data, this.config);
     } catch (e) {
       return false;
     }
 
-    let isResponse = Boolean(msg.wrapperId) && Boolean(msg.transferId);
 
-    if ( isResponse ) {
-      let wrapper = this.wrappers.get(msg.wrapperId);
+    if (transfer instanceof ResponseTransfer) {
+      let wrapper = this.wrappers.get(transfer.wrapperId);
 
       if (wrapper) {
-        wrapper.dispatchMessage(msg);
+        wrapper.dispatchMessage(transfer);
         return true;
       } else {
         return false;
       }
-    } else if ( msg.fnName && msg.fnArgs ) {
-      msg.source = ev.source;
-      return this.dispatchCall(msg);
+    } else if (transfer instanceof RequestTransfer) {
+      transfer.source = ev.source;
+      return this.dispatchCall(transfer);
     } else {
       return false;
     }
@@ -84,7 +80,7 @@ export default class {
 
   sendResponse(msg, valuePromise) {
     return valuePromise.then(value => {
-      const responseTransfer = new ResponseTransfer(msg, value);
+      const responseTransfer = new ResponseTransfer(msg, value, this.config);
       msg.source.postMessage(responseTransfer.toString(), "*");
     });
   }

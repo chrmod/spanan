@@ -26,6 +26,11 @@ describe("Server", function () {
     it("set isListening flag to false", function () {
       expect(server).to.have.property("isListening").to.be.false;
     });
+
+    it("accepts config objects and sets it as own property", function () {
+      let config = { meta: { test: true } };
+      expect(new Server(ctx, config)).to.have.property("config", config);
+    });
   });
 
   describe("#startListening", function () {
@@ -88,12 +93,12 @@ describe("Server", function () {
       it("calls dispatchCall", done => {
         server.dispatchCall = () => done();
         server.dispatchMessage({
-          data: `{ "fnName": "echo", "fnArgs": ["test"] }`
+          data: `{ "id": 1, "wrapperId": 2,  "fnName": "echo", "fnArgs": ["test"] }`
         });
       });
 
       it("pass message to dispatchCall", done => {
-        let message = { fnName: "echo", fnArgs: [] };
+        let message = { id: 1, wrapperId: 2, fnName: "echo", fnArgs: [] };
         server.dispatchCall = (msg) => {
           expect(msg).to.have.property("fnName").that.deep.equal(message.fnName);
           expect(msg).to.have.property("fnArgs").that.deep.equal(message.fnArgs);
@@ -111,21 +116,46 @@ describe("Server", function () {
           done();
         };
         server.dispatchMessage({
-          data: `{ "fnName": "echo", "fnArgs": ["test"] }`,
+          data: `{ "id": 1, "wrapperId": 2, "fnName": "echo", "fnArgs": ["test"] }`,
           source
         });
       });
 
       it("returns same as dispatchCall", function () {
+        const data = `{ "id": 1, "wrapperId": 2, "fnName": "echo", "fnArgs": ["test"] }`;
         server.dispatchCall = () => true;
-        expect( server.dispatchMessage({
-          data: `{ "fnName": "echo", "fnArgs": ["test"] }`
-        }) ).to.equal(true);
+        expect( server.dispatchMessage({data}) ).to.equal(true);
 
         server.dispatchCall = () => false;
-        expect( server.dispatchMessage({
-          data: `{ "fnName": "echo", "fnArgs": ["test"] }`
-        }) ).to.equal(false);
+        expect( server.dispatchMessage({ data }) ).to.equal(false);
+      });
+
+      context("with custom config", function () {
+        const config = {
+          meta: {
+          },
+          requestProperties: {
+            fnName: "action",
+          }
+        };
+
+        beforeEach(function () {
+          server = new Server(ctx, config);
+        });
+
+        it("dispatchesCall correctly", function (done) {
+          server.dispatchCall = () => done();
+          server.dispatchMessage({
+            data: `{ "id": 1, "wrapperId": 2, "action": "echo", "fnArgs": ["test"] }`
+          });
+        });
+
+        it("returns false on message that does not meet config spec", function () {
+
+          expect( server.dispatchMessage({
+            data: `{ "id": 1, "wrapperId": 2, "custom-fnName-param": "echo", "fnArgs": ["test"] }`
+          }) ).to.equal(false);
+        });
       });
     });
 
