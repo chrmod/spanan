@@ -1,8 +1,8 @@
 /*eslint-env mocha */
 /*global chai */
 
-import Spanan from "../facade";
-import Wrapper from "../wrapper";
+import Spanan from "../../facade";
+import Wrapper from "../../wrapper";
 
 var expect = chai.expect;
 
