@@ -1,7 +1,7 @@
 /*eslint-env mocha */
 /*global chai */
 
-import { RequestTransfer, BaseTransfer } from "../transfer";
+import { RequestTransfer, BaseTransfer } from "../../transfer";
 
 var expect = chai.expect;
 

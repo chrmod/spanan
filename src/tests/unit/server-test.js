@@ -1,9 +1,9 @@
 /*eslint-env mocha */
 /*global chai */
 
-import Server from "../server";
-import Wrapper from "../wrapper";
-import { RequestTransfer } from "../transfer";
+import Server from "../../server";
+import Wrapper from "../../wrapper";
+import { RequestTransfer } from "../../transfer";
 
 var expect = chai.expect;
 

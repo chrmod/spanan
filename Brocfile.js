@@ -1,51 +1,54 @@
 var babel = require('broccoli-babel-transpiler');
-var browserify = require('broccoli-browserify');
-var env = require('broccoli-env').getEnv();
 var MergeTrees = require('broccoli-merge-trees');
-var Funnel = require('broccoli-funnel');
 var WatchedTree = require('broccoli-source').WatchedDir;
-var uglifyJavaScript = require('broccoli-uglify-js');
-var renameFiles = require('broccoli-rename-files');
+var SystemBuilder = require('broccoli-system-builder');
+var env = require('broccoli-env').getEnv();
+var Funnel = require('broccoli-funnel');
 
-var outputTrees = [];
+function package(tree, options) {
+  options = options || {};
+  options.configPath = options.configPath || 'system.config.js';
+  options.inputFileName = options.inputFileName || 'index.js';
+  options.outputFileName = options.outputFileName || 'index.js';
+  options.format = options.format || 'global';
+
+  return new SystemBuilder(tree, '/', options.configPath, function (builder) {
+    return builder.buildStatic(options.inputFileName, options.outputFileName, {
+      format: options.format,
+      runtime: false,
+    });
+  });
+}
 
 var src = new WatchedTree('src');
 
-transpiledSrc = babel(src, {
-  modules: 'system'
+var transpiledSrc = babel(src);
+
+var transpiledLib = new Funnel(transpiledSrc, {
+  exclude: ['**/*-test.js'],
 });
 
-var js    = new Funnel(transpiledSrc, { exclude: ['tests/**/*'] });
-var tests = new Funnel(transpiledSrc, {
-  srcDir: 'tests',
-  destDir: 'test-files',
-  include: ['**/*'],
-});
+var outputNodes = [
+  package(transpiledLib, {
+    format: 'global',
+    inputFileName: 'index.js',
+    outputFileName: 'spanan.global.js'
+  }),
+  package(transpiledLib, {
+    format: 'esm',
+    inputFileName: 'index.js',
+    outputFileName: 'spanan.es2015.js'
+  }),
+];
 
-
-var output = new Funnel(src, { exclude: ['tests/**/*'] });
-output = babel(output, {
-  modules: 'common'
-});
-var output = browserify(output, {
-  entries: [ './index.js' ],
-  outputFile: 'spanan.js'
-});
-
-if (env === 'production') {
-  var minifiedOutput = uglifyJavaScript(output);
-  minifiedOutput = renameFiles(minifiedOutput, {
-    transformFilename: function(filename, basename, extname) {
-      return basename+".min.js";
-    }
-  });
-  outputTrees.push(minifiedOutput);
+if (env === 'development') {
+  outputNodes.push(package(transpiledSrc, {
+    format: 'global',
+    inputFileName: 'tests/index-test.js',
+    outputFileName: 'tests.js',
+  }));
 }
 
-if (env !== 'production') {
-  outputTrees.push(js);
-  outputTrees.push(tests);
-}
-outputTrees.push(output);
+var outputNode = new MergeTrees(outputNodes);
 
-module.exports = new MergeTrees(outputTrees);
+module.exports = outputNode;

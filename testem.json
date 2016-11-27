@@ -1,14 +1,13 @@
 {
-  "framework": "mocha",
   "launch_in_dev": [
-    "Firefox",
-    "Chrome"
+    "Chrome",
+    "Firefox"
   ],
   "launch_in_ci": [
     "Firefox"
   ],
   "test_page": "tests/index.html",
-  "before_tests": "npm run cleantests; npm run buildtests",
+  "before_tests": "npm run cleantests && npm run buildtests",
   "on_exit": "npm run cleantests",
   "watch_files": [
     "src/**/*.js"
