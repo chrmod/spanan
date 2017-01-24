@@ -1,10 +1,7 @@
 language: node_js
 
 node_js:
-  - "5"
-
-addons:
-  firefox: "44.0"
+  - "6"
 
 branches:
   only:
@@ -13,8 +10,6 @@ branches:
 cache:
   directories:
     - node_modules
-    - bower_components
 
 before_script:
-  - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
+  - "raureif build"

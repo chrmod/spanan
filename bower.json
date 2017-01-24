@@ -15,10 +15,6 @@
   ],
   "dependencies": {},
   "devDependencies": {
-    "chai": "3.5.0",
-    "chai-as-promised": "5.2.0",
-    "system.js": "^0.19.23",
-    "mocha": "^3.1.2"
   },
   "homepage": ""
 }

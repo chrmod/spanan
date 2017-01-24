@@ -1,27 +1,24 @@
 {
   "name": "spanan",
-  "version": "0.1.0",
-  "description": "Cross iframe communication made easy",
-  "scripts": {
-    "postinstall": "bower install",
-    "buildtests": "broccoli build build",
-    "cleantests": "rm -rf build",
-    "start": "testem",
-    "test": "testem ci",
-    "prebuild": "rm -rf dist",
-    "build": "BROCCOLI_ENV=production broccoli build dist"
-  },
+  "version": "1.0.2",
+  "description": "postMessage made easy",
   "author": "Krzysztof Jan Modras <krzysztof.modras@gmail.com>",
   "license": "MIT",
+  "scripts": {
+    "test": "raureif runtest"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist/index.js"
+  ],
+  "dependencies": {
+    "uuid": "^3.0.1"
+  },
   "devDependencies": {
-    "bower": "^1.7.7",
-    "broccoli": "^0.16.9",
-    "broccoli-babel-transpiler": "^5.6.1",
-    "broccoli-cli": "^1.0.0",
-    "broccoli-env": "0.0.1",
-    "broccoli-funnel": "^1.0.9",
-    "broccoli-source": "^1.1.0",
-    "broccoli-system-builder": "^1.0.4",
-    "testem": "^1.13.0"
+    "chai": "^3.5.0",
+    "chai-as-promised": "^6.0.0",
+    "raureif": "^1.0.0",
+    "sinon": "^1.17.7",
+    "sinon-chai": "^2.8.0"
   }
 }
