@@ -1,15 +1,19 @@
 {
   "name": "spanan",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "postMessage made easy",
   "author": "Krzysztof Jan Modras <krzysztof.modras@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "test": "raureif runtest"
+    "build": "raureif build",
+    "test": "raureif runtest",
+    "prepublish": "npm run build",
+    "prebuild": "npm run test"
   },
   "main": "dist/index.js",
   "files": [
-    "dist/index.js"
+    "dist/index.js",
+    "dist/index.browser.js"
   ],
   "dependencies": {
     "uuid": "^3.0.1"
@@ -17,7 +21,7 @@
   "devDependencies": {
     "chai": "^3.5.0",
     "chai-as-promised": "^6.0.0",
-    "raureif": "^1.0.0",
+    "raureif": "1.1.1",
     "sinon": "^1.17.7",
     "sinon-chai": "^2.8.0"
   }
