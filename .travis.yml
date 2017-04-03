@@ -1,15 +1,18 @@
 language: node_js
-
 node_js:
-  - "6"
-
+- '6'
 branches:
   only:
-    - master
-
+  - master
 cache:
   directories:
-    - node_modules
-
+  - node_modules
 before_script:
-  - "raureif build"
+- raureif build
+deploy:
+  provider: npm
+  email: krzysztof.modras@gmail.com
+  on:
+    tags: true
+  api_key:
+    secure: o+ahiuhFKTPFSMpOfw2bVjNs49QyCf3Wx7TWHTMbWq95XHXw3tVmaNeThQRUj46OzspjDWgK50gUHjIMU64FQzRdk1K5mUB9V2tMWHbbYt7jhYptlcAljowdfjBgzFsx/t7MKi2gdVA/Y6i1nPvIRHhO/covw9tynfV2POmrbyFEUujbndaZFdU6rtP2/kpRlreP7uclrpvrfChSdKZrnNOgpfr++sjdRj/BWVslNs/1DXkvM3hdGmWtHkfMovNH1scJN0uEdGBjJUNbf0HO2TEb2a0tcshdMMx22eHFpugp/gPi2xw/XYKDmObQon+fQd+MhHnyyejhG0/3LwaxLUKnPQJiRSXJ+CaH5aI7p64O6bOHLGbM5iypABV31Mp8wJpxTs4p4WDVyRwbib7NLTV28wgzV5MQNXgh+zuOjwic7Sb3wG2tcaqJ0nDq4m8861ONy0svkLw+fLkIgLrHoMVlymDaiFqXxB06dLREYjf3/ZEIem3kiYPXOf39TzkDmX2fbJvYsFZLUiPd+JFMOzRdzAiB/nkurqk88wW3ScsK9kC88wiwbsbBJn7j/o9ZZMPChRUvpj3TDxim7I3cBtuC8Z5Yb9KBrCKtMvxOEHsM63RG+e+JoSYUpLnmGEmhnOOWhtn3cfitgKRnwyLB11AkFIVVkf21otRcp27UbMk=
