@@ -1,5 +1,3 @@
-import uuidV4 from 'uuid/v4';
-
 export default class Spanan {
   constructor(sendFunction) {
     this.sendFunction = sendFunction;
@@ -43,6 +41,12 @@ export default class Spanan {
   }
 
   static uuid() {
-    return uuidV4();
+    function s4() {
+      return Math.floor((1 + Math.random()) * 0x10000)
+        .toString(16)
+        .substring(1);
+    }
+    return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+      s4() + '-' + s4() + s4() + s4();
   }
 }

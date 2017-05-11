@@ -15,9 +15,6 @@
     "dist/index.js",
     "dist/index.browser.js"
   ],
-  "dependencies": {
-    "uuid": "^3.0.1"
-  },
   "devDependencies": {
     "chai": "^3.5.0",
     "chai-as-promised": "^6.0.0",
