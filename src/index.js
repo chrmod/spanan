@@ -1,7 +1,14 @@
+const dispatchers = [];
+
+const addDispatcher = (dispatcher) => {
+  dispatchers.push(dispatcher);
+};
+
 export default class Spanan {
   constructor(sendFunction) {
     this.sendFunction = sendFunction;
     this.callbacks = new Map();
+    addDispatcher(this.dispatch);
   }
 
   send(functionName, ...args) {
@@ -48,5 +55,49 @@ export default class Spanan {
     }
     return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
       s4() + '-' + s4() + s4() + s4();
+  }
+
+  static dispatch(message) {
+    return dispatchers.some((dispatcher) => {
+      try {
+        return dispatcher(message);
+      } catch(e) {
+        return false;
+      }
+    });
+  }
+
+  static export(
+    actions = {},
+    {
+      respond = (res, req) => {},
+      filter = () => true,
+      transform = r => r,
+    } = {},
+  ) {
+    const dispatch = (request) => {
+
+      if (!filter) {
+        return false;
+      }
+
+      const { args, action } = transform(request);
+
+      if (!actions.hasOwnProperty(action)) {
+        return false;
+      }
+
+      let res = actions[action](...args);
+
+      if (!(res instanceof Promise)) {
+        res = Promise.resolve(res);
+      }
+
+      res.then((response) => respond(response, request));
+
+      return true;
+    };
+
+    addDispatcher(dispatch);
   }
 }
