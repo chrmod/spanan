@@ -39,6 +39,50 @@ iframe.contentWindow.addEventListener('message', (event) => {
 });
 ```
 
+## Exposing API
+
+Given a object that all own properties are function:
+
+```js
+const action = {
+  echo(text) {
+    return text;
+  },
+};
+```
+
+Spanan can automatically respond to upcoming messages that matches the desired
+shape. By default upcoming messages must have 3 properties: `udid`, `action` and `args`.
+
+```js
+Spanan.export(actions, {
+  respond(response, request) {
+    window.postMessage(JSON.stringify({
+      type: 'response',
+      id: request.udid,
+      returnedValue: response,
+    }));
+  },
+});
+```
+
+Now, Spanan need to listen to upcoming messages:
+
+```
+window.addEventListener('message' (ev) => {
+  const message = JSON.parse(ev.data);
+
+  Spanan.dispatch(message);
+});
+```
+
+Second argument for `export` is an options object that can configure default
+Spanan behavior, it has following properties:
+
+* `respond(response, request)` - being called for every messsage that was successfully dispatched
+* `filter(request)` - called for every message, if returns true, the matching action will be called
+* `transform(request)` - called for every positively filtered message, it return new object that must have an `action` property that is being used to match the name of the action that should be called.
+
 # Requirements
 
 Spanan uses Javascript Proxy API so require will work in Firefox >= 40 or
