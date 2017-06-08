@@ -8,7 +8,7 @@ export default class Spanan {
   constructor(sendFunction) {
     this.sendFunction = sendFunction;
     this.callbacks = new Map();
-    addDispatcher(this.dispatch);
+    addDispatcher(this.dispatch.bind(this));
   }
 
   send(functionName, ...args) {
