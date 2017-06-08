@@ -1,4 +1,4 @@
-const dispatchers = [];
+let dispatchers = [];
 
 const addDispatcher = (dispatcher) => {
   dispatchers.push(dispatcher);
@@ -81,7 +81,7 @@ export default class Spanan {
         return false;
       }
 
-      const { args, action } = transform(request);
+      const { args = [], action } = transform(request);
 
       if (!actions.hasOwnProperty(action)) {
         return false;
@@ -99,5 +99,9 @@ export default class Spanan {
     };
 
     addDispatcher(dispatch);
+  }
+
+  static reset() {
+    dispatchers = [];
   }
 }
