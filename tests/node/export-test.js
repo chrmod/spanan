@@ -56,4 +56,58 @@ describe('Export', function () {
       });
     });
   });
+
+  describe('Spanan.export', function () {
+    context('on matching message and rejecting filter', function () {
+      it('does not respond', function (done) {
+        this.timeout(50);
+        setTimeout(done, 30);
+        Spanan.export({
+          echo() {
+            done('should not happen');
+          },
+        }, {
+          filter() { return false; },
+        });
+        Spanan.dispatch(message)
+      });
+    });
+
+    context('on unmatching message and matching transform', function () {
+      it('does call function', function (done) {
+        Spanan.export({
+          echo() {
+            done();
+          },
+        }, {
+          transform(request) {
+            return {
+              action: request.fn,
+            };
+          },
+        });
+        Spanan.dispatch({
+          fn: message.action,
+        });
+      });
+
+      it('does respond', function (done) {
+        Spanan.export({
+          echo() {},
+        }, {
+          transform(request) {
+            return {
+              action: request.fn,
+            };
+          },
+          respond() {
+            done();
+          }
+        });
+        Spanan.dispatch({
+          fn: message.action,
+        });
+      });
+    });
+  });
 });

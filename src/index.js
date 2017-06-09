@@ -77,7 +77,7 @@ export default class Spanan {
   ) {
     const dispatch = (request) => {
 
-      if (!filter) {
+      if (!filter || !filter(request)) {
         return false;
       }
 
