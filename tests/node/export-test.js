@@ -1,4 +1,5 @@
 import Spanan from '../index';
+import SpananServer from '../server';
 import { expect } from 'chai';
 
 const message = { action: 'echo' };
@@ -58,6 +59,24 @@ describe('Export', function () {
   });
 
   describe('Spanan.export', function () {
+    it('returns serve object', function () {
+      expect(Spanan.export({})).to.be.instanceof(SpananServer);
+    });
+
+    context('after calling terminate on server', function () {
+      it('does not respond', function (done) {
+        this.timeout(50);
+        setTimeout(done, 30);
+        const server = Spanan.export({
+          echo() {
+            done('should not happen');
+          },
+        });
+        server.terminate();
+        Spanan.dispatch(message)
+      });
+    });
+
     context('on matching message and rejecting filter', function () {
       it('does not respond', function (done) {
         this.timeout(50);

@@ -1,7 +1,14 @@
+import Server from './server';
+import uuid from './uuid';
+
 let dispatchers = [];
 
 const addDispatcher = (dispatcher) => {
   dispatchers.push(dispatcher);
+};
+
+const removeDispatcher = (dispatcher) => {
+  dispatchers = dispatchers.filter(d => d !== dispatcher);
 };
 
 export default class Spanan {
@@ -13,17 +20,17 @@ export default class Spanan {
 
   send(functionName, ...args) {
     let resolver;
-    const uuid = Spanan.uuid();
+    const id = uuid();
     const promise = new Promise(function (resolve) {
       resolver = resolve;
     });
-    this.callbacks.set(uuid, function () {
+    this.callbacks.set(id, function () {
       resolver.apply(null, arguments);
     });
     this.sendFunction({
       functionName,
       args,
-      uuid,
+      uuid: id,
     });
     return promise;
   }
@@ -47,16 +54,6 @@ export default class Spanan {
     return true;
   }
 
-  static uuid() {
-    function s4() {
-      return Math.floor((1 + Math.random()) * 0x10000)
-        .toString(16)
-        .substring(1);
-    }
-    return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
-      s4() + '-' + s4() + s4() + s4();
-  }
-
   static dispatch(message) {
     return dispatchers.some((dispatcher) => {
       try {
@@ -68,37 +65,26 @@ export default class Spanan {
   }
 
   static export(
-    actions = {},
+    actions,
     {
-      respond = (res, req) => {},
-      filter = () => true,
-      transform = r => r,
+      filter,
+      transform,
+      respond,
     } = {},
   ) {
-    const dispatch = (request) => {
+    const server = new Server({
+      actions,
+      respond,
+      filter,
+      transform,
+      onTerminate: () => {
+        removeDispatcher(server.dispatch);
+      },
+    });
 
-      if (!filter || !filter(request)) {
-        return false;
-      }
+    addDispatcher(server.dispatch);
 
-      const { args = [], action } = transform(request);
-
-      if (!actions.hasOwnProperty(action)) {
-        return false;
-      }
-
-      let res = actions[action](...args);
-
-      if (!(res instanceof Promise)) {
-        res = Promise.resolve(res);
-      }
-
-      res.then((response) => respond(response, request));
-
-      return true;
-    };
-
-    addDispatcher(dispatch);
+    return server;
   }
 
   static reset() {

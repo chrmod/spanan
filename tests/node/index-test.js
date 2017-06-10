@@ -23,15 +23,6 @@ describe('Spanan', function () {
     });
   });
 
-  describe('#uuid', function () {
-    it('returns new uuid on every call', function () {
-      expect(Spanan.uuid()).to.not.be.equal(Spanan.uuid());
-    });
-
-    it('returns a valid uuid v4', function () {
-      expect(Spanan.uuid()).to.have.property('length', 36);
-    });
-  });
 
   describe('.send', function () {
     it('calls .sendFunction', function () {
