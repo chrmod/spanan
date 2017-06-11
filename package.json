@@ -13,8 +13,9 @@
   "main": "dist/index.js",
   "browser": "dist/index.browser.js",
   "files": [
-    "dist/index.js",
-    "dist/index.browser.js"
+    "dist/*",
+    "!dist/browser",
+    "!dist/node"
   ],
   "devDependencies": {
     "chai": "^3.5.0",
