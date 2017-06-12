@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "build": "raureif build",
-    "test": "raureif runtest",
+    "test": "raureif test",
     "prepublish": "npm run build",
     "prebuild": "npm run test"
   },
