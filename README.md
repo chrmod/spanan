@@ -109,7 +109,7 @@ raureif test
 Run tests in CI mode by:
 
 ```
-raureif runtest
+raureif test --ci
 ```
 
 # Building for distribution

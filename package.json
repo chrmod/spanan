@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "build": "raureif build",
-    "test": "raureif test",
+    "test": "raureif test --ci",
     "prepublish": "npm run build",
     "prebuild": "npm run test"
   },
@@ -15,12 +15,13 @@
   "files": [
     "dist/*",
     "!dist/browser",
-    "!dist/node"
+    "!dist/node",
+    "!dist/polyfill.js"
   ],
   "devDependencies": {
     "chai": "^3.5.0",
     "chai-as-promised": "^6.0.0",
-    "raureif": "1.4.2",
+    "raureif": "1.5.1",
     "sinon": "^1.17.7",
     "sinon-chai": "^2.8.0"
   }
