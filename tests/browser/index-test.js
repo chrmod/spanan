@@ -30,8 +30,7 @@ describe('in same window', function () {
       const spanan = new Spanan((message) => {
         window.postMessage(message, '*');
       });
-      const proxy = spanan.createProxy();
-      proxy.echo();
+      spanan.send('echo');
     });
 
     it('call Spanan export on message', function (done) {
@@ -69,8 +68,7 @@ describe('in same window', function () {
           uuid: message.uuid,
         }, '*');
       });
-      const proxy = spanan.createProxy();
-      return proxy.echo('test').then(response => {
+      return spanan.send('echo', 'test').then(response => {
         expect(response).to.equal('test');
       });
     });
