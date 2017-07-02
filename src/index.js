@@ -1,5 +1,5 @@
 import Server from './server';
-import uuid from './uuid';
+import UUID from './uuid';
 
 let dispatchers = [];
 
@@ -20,13 +20,9 @@ export default class Spanan {
 
   send(functionName, ...args) {
     let resolver;
-    const id = uuid();
-    const promise = new Promise(function (resolve) {
-      resolver = resolve;
-    });
-    this.callbacks.set(id, function () {
-      resolver.apply(null, arguments);
-    });
+    const id = UUID();
+    const promise = new Promise((resolve) => { resolver = resolve; });
+    this.callbacks.set(id, (...argList) => resolver(...argList));
     this.sendFunction({
       functionName,
       args,
@@ -39,7 +35,7 @@ export default class Spanan {
     return new Proxy(this, {
       get(target, key) {
         return target.send.bind(target, key);
-      }
+      },
     });
   }
 
@@ -58,7 +54,7 @@ export default class Spanan {
     return dispatchers.some((dispatcher) => {
       try {
         return dispatcher(message);
-      } catch(e) {
+      } catch (e) {
         return false;
       }
     });

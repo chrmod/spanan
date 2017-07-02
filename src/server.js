@@ -1,8 +1,10 @@
+const has = (o, p) => Object.prototype.hasOwnProperty.call(o, p);
+
 export default class {
 
   constructor({
     actions = {},
-    respond = (res, req) => {},
+    respond = (/* res, req */) => {},
     filter = () => true,
     transform = r => r,
     onTerminate = () => {},
@@ -22,7 +24,7 @@ export default class {
 
     const { args = [], action } = this.transform(request);
 
-    if (!this.actions.hasOwnProperty(action)) {
+    if (!has(this.actions, action)) {
       return false;
     }
 
@@ -32,7 +34,7 @@ export default class {
       res = Promise.resolve(res);
     }
 
-    res.then((response) => this.respond(response, request));
+    res.then(response => this.respond(response, request));
 
     return true;
   }
