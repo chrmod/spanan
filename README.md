@@ -81,7 +81,7 @@ Spanan behavior, it has following properties:
 
 * `respond(response, request)` - being called for every messsage that was successfully dispatched
 * `filter(request)` - called for every message, if returns true, the matching action will be called
-* `transform(request)` - called for every positively filtered message, it return new object that must have an `action` property that is being used to match the name of the action that should be called.
+* `transform(request)` - called for every positively filtered message. It must return an object with `action` and `args` properties. `action` is being used to match the name of the function that should be called, `args` are the arguments passed to the function.
 
 # Requirements
 

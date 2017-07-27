@@ -55,6 +55,7 @@ export default class Spanan {
       try {
         return dispatcher(message);
       } catch (e) {
+        console.error('Spanan dispatch error', e);
         return false;
       }
     });
