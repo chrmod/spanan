@@ -21,7 +21,7 @@
   "devDependencies": {
     "chai": "^3.5.0",
     "chai-as-promised": "^6.0.0",
-    "raureif": "1.5.1",
+    "raureif": "2.0.4",
     "sinon": "^1.17.7",
     "sinon-chai": "^2.8.0"
   }

@@ -55,7 +55,10 @@ export default class Spanan {
       try {
         return dispatcher(message);
       } catch (e) {
+        /* eslint-disable */
+        // TODO: introduce a custom logger
         console.error('Spanan dispatch error', e);
+        /* eslint-enable */
         return false;
       }
     });
