@@ -1,3 +1,5 @@
+/* @flow */
+
 import Server from './server';
 import UUID from './uuid';
 
@@ -11,17 +13,28 @@ const removeDispatcher = (dispatcher) => {
   dispatchers = dispatchers.filter(d => d !== dispatcher);
 };
 
+type DispatchParams = {|
+  uuid: string,
+  returnedValue: any,
+|};
+
+type sendFn = (any) => void;
+
 export default class Spanan {
-  constructor(sendFunction) {
+
+  sendFunction: sendFn;
+  callbacks: Map<string, sendFn>;
+
+  constructor(sendFunction: sendFn) {
     this.sendFunction = sendFunction;
     this.callbacks = new Map();
     addDispatcher(this.dispatch.bind(this));
   }
 
-  send(functionName, ...args) {
+  send(functionName: string, ...args: any) {
     let resolver;
     const id = UUID();
-    const promise = new Promise((resolve) => { resolver = resolve; });
+    const promise: Promise<any> = new Promise((resolve) => { resolver = resolve; });
     this.callbacks.set(id, (...argList) => resolver(...argList));
     this.sendFunction({
       functionName,
@@ -39,7 +52,10 @@ export default class Spanan {
     });
   }
 
-  dispatch({ uuid, returnedValue } = {}) {
+  dispatch({
+    uuid,
+    returnedValue,
+  }: DispatchParams) {
     const callback = this.callbacks.get(uuid);
     if (!callback) {
       return false;
@@ -55,7 +71,10 @@ export default class Spanan {
       try {
         return dispatcher(message);
       } catch (e) {
+        /* eslint-disable */
+        // TODO: introduce a custom logger
         console.error('Spanan dispatch error', e);
+        /* eslint-enable */
         return false;
       }
     });

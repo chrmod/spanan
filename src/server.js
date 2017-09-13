@@ -1,14 +1,46 @@
+/* @flow */
+
 const has = (o, p) => Object.prototype.hasOwnProperty.call(o, p);
+
+type dispatchFn = (r: any) => void;
+
+type responseObj = {|
+
+|}
+
+type requestObj = {|
+  action: string,
+  args: Array<any>,
+|}
+
+type transformFn = requestObj => requestObj;
+type respondFn = (responseObj, requestObj) => void;
+type filterFn = requestObj => boolean;
+
+type ServerParams = {|
+  respond: respondFn,
+  filter: filterFn,
+  transform: transformFn,
+  onTerminate: () => void,
+  actions: Map<string, () => void>,
+|};
 
 export default class {
 
+  onTerminate: () => void;
+  respond: respondFn;
+  actions: any;
+  transform: transformFn;
+  filter: filterFn;
+  dispatch: dispatchFn;
+
   constructor({
-    actions = {},
+    actions = new Map(),
     respond = (/* res, req */) => {},
     filter = () => true,
     transform = r => r,
     onTerminate = () => {},
-  } = {}) {
+  }: ServerParams) {
     this.actions = actions;
     this.onTerminate = onTerminate;
     this.dispatch = this.dispatch.bind(this);
@@ -17,7 +49,7 @@ export default class {
     this.respond = respond;
   }
 
-  dispatch(request) {
+  dispatch(request: any) {
     if (!this.filter || !this.filter(request)) {
       return false;
     }

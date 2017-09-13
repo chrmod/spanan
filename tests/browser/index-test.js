@@ -1,5 +1,3 @@
-import { expect } from 'chai';
-import Spanan from '../index';
 
 describe('in same window', function () {
   describe('wraps message api', function () {
