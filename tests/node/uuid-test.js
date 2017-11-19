@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import uuid from '../uuid';
+import uuid from '../../uuid';
 
 describe('uuid', function () {
   it('returns new uuid on every call', function () {

@@ -1,7 +1,6 @@
 const has = (o, p) => Object.prototype.hasOwnProperty.call(o, p);
 
 export default class {
-
   constructor({
     actions = {},
     respond = (/* res, req */) => {},
@@ -42,5 +41,4 @@ export default class {
   terminate() {
     this.onTerminate();
   }
-
 }

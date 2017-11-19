@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import Spanan from '../index';
+import Spanan from '../../index';
 
 describe('in same window', function () {
   describe('wraps message api', function () {
@@ -21,7 +21,7 @@ describe('in same window', function () {
           expect(message).to.have.property('args');
           expect(message).to.have.property('uuid');
           done();
-        } catch(e) {
+        } catch (e) {
           done(e);
         }
       };
@@ -38,7 +38,7 @@ describe('in same window', function () {
       window.addEventListener('message', onMessage);
 
       Spanan.export({
-        echo() { done(); }
+        echo() { done(); },
       });
 
       window.postMessage({
@@ -58,7 +58,7 @@ describe('in same window', function () {
             uuid: request.uuid,
             returnedValue: response,
           }, '*');
-        }
+        },
       });
 
       const spanan = new Spanan((message) => {
@@ -68,10 +68,9 @@ describe('in same window', function () {
           uuid: message.uuid,
         }, '*');
       });
-      return spanan.send('echo', 'test').then(response => {
+      return spanan.send('echo', 'test').then((response) => {
         expect(response).to.equal('test');
       });
     });
   });
-
 });

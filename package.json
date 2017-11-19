@@ -14,15 +14,23 @@
   "browser": "dist/index.browser.js",
   "files": [
     "dist/*",
-    "!dist/browser",
-    "!dist/node",
+    "!dist/tests",
     "!dist/polyfill.js"
   ],
   "devDependencies": {
-    "chai": "^3.5.0",
+    "chai": "3.5.0",
     "chai-as-promised": "^6.0.0",
-    "raureif": "2.0.4",
-    "sinon": "^1.17.7",
+    "eslint": "4.10.0",
+    "eslint-plugin-chai-expect": "^1.1.1",
+    "eslint-plugin-import": "2.7.0",
+    "eslint-plugin-jsx-a11y": "6.0.2",
+    "eslint-plugin-mocha": "4.11.0",
+    "eslint-plugin-react": "7.4.0",
+    "raureif": "3.0.2",
+    "raureif-babel": "0.1.0",
+    "raureif-browserify": "3.0.1",
+    "raureif-eslint": "3.0.1",
+    "sinon": "1.17.7",
     "sinon-chai": "^2.8.0"
   }
 }

@@ -1,6 +1,6 @@
-import Spanan from '../index';
-import SpananServer from '../server';
 import { expect } from 'chai';
+import Spanan from '../../index';
+import SpananServer from '../../server';
 
 const message = { action: 'echo' };
 
@@ -14,46 +14,38 @@ describe('Export', function () {
       context('and message that matches export', function () {
         it('if export does not throw it returns true', function () {
           Spanan.export({
-            echo() {}
+            echo() {},
           });
-          expect(
-            Spanan.dispatch(message)
-          ).to.equal(true);
+          expect(Spanan.dispatch(message)).to.equal(true);
         });
 
         it('if export does throw it returns false', function () {
           Spanan.export({
-            echo() { throw 'error'; }
+            echo() { throw new Error('error'); },
           });
-          expect(
-            Spanan.dispatch(message)
-          ).to.equal(false);
+          expect(Spanan.dispatch(message)).to.equal(false);
         });
       });
     });
 
     context('with no exports defined', function () {
       it('return false', function () {
-        expect(
-          Spanan.dispatch(message)
-        ).to.equal(false);
+        expect(Spanan.dispatch(message)).to.equal(false);
       });
     });
 
     context('with at least one matching export that does not throw', function () {
       beforeEach(function () {
         Spanan.export({
-          echo() { throw 'error'; }
+          echo() { throw new Error('error'); },
         });
         Spanan.export({
-          echo() {}
+          echo() {},
         });
       });
 
       it('return true', function () {
-        expect(
-          Spanan.dispatch(message)
-        ).to.equal(true);
+        expect(Spanan.dispatch(message)).to.equal(true);
       });
     });
   });
@@ -73,7 +65,7 @@ describe('Export', function () {
           },
         });
         server.terminate();
-        Spanan.dispatch(message)
+        Spanan.dispatch(message);
       });
     });
 
@@ -88,7 +80,7 @@ describe('Export', function () {
         }, {
           filter() { return false; },
         });
-        Spanan.dispatch(message)
+        Spanan.dispatch(message);
       });
     });
 
@@ -121,7 +113,7 @@ describe('Export', function () {
           },
           respond() {
             done();
-          }
+          },
         });
         Spanan.dispatch({
           fn: message.action,
