@@ -1,8 +1,8 @@
-import { expect, default as chai } from 'chai';
+import chai, { expect } from 'chai';
 import sinon from 'sinon';
 import sinonChai from 'sinon-chai';
 import chaiAsPromised from 'chai-as-promised';
-import Spanan from '../index';
+import Spanan from '../../index';
 
 describe('Spanan', function () {
   before(function () {
@@ -29,22 +29,18 @@ describe('Spanan', function () {
       const spy = sinon.spy();
       const spanan = new Spanan();
       const functionName = 'test';
-      const args = [1,2,3];
+      const args = [1, 2, 3];
       spanan.sendFunction = spy;
 
       spanan.send(functionName, ...args);
 
-      expect(spy).to.have.been.calledWithMatch(
-        sinon.match({ functionName, args, })
-      );
-      expect(spy).to.have.been.calledWithMatch(
-        sinon.match.has('uuid')
-      );
+      expect(spy).to.have.been.calledWithMatch(sinon.match({ functionName, args }));
+      expect(spy).to.have.been.calledWithMatch(sinon.match.has('uuid'));
     });
 
     it('returns a Promise', function () {
       const spanan = new Spanan(() => {});
-      expect(spanan.send()).to.be.an.instanceof(Promise)
+      expect(spanan.send()).to.be.an.instanceof(Promise);
     });
 
     it('increases callback count', function () {
@@ -54,7 +50,7 @@ describe('Spanan', function () {
 
     it('sets callback with a key equal to message uuid', function () {
       let callbackId;
-      const spanan = new Spanan(({ uuid }) => callbackId = uuid);
+      const spanan = new Spanan(({ uuid }) => { callbackId = uuid; });
       expect(spanan.callbacks.has(callbackId)).to.be.false;
       spanan.send();
       expect(spanan.callbacks.has(callbackId)).to.be.true;
@@ -62,13 +58,11 @@ describe('Spanan', function () {
 
     it('sets callback that resolves returned promise with a value', function () {
       let callbackId;
-      const spanan = new Spanan(({ uuid }) => callbackId = uuid);
+      const spanan = new Spanan(({ uuid }) => { callbackId = uuid; });
       const promise = spanan.send();
       const value = 'test';
       spanan.callbacks.get(callbackId)(value);
-      return promise.then(returnedValue => {
-        expect(returnedValue).to.equal(value);
-      });
+      return promise.then(returnedValue => expect(returnedValue).to.equal(value));
     });
   });
 
@@ -80,7 +74,7 @@ describe('Spanan', function () {
 
     it('returns true if there was a callback pending', function () {
       let messageId;
-      const spanan = new Spanan(({ uuid }) => messageId = uuid);
+      const spanan = new Spanan(({ uuid }) => { messageId = uuid; });
       spanan.send();
       expect(spanan.dispatch({ uuid: messageId })).to.equal(true);
     });
@@ -88,21 +82,21 @@ describe('Spanan', function () {
     it('calls callback with message returnedValue', function () {
       let messageId;
       const returnedValue = 'test';
-      const spanan = new Spanan(({ uuid }) => messageId = uuid);
+      const spanan = new Spanan(({ uuid }) => { messageId = uuid; });
       const promise = spanan.send().then((value) => {
         expect(value).to.equal(returnedValue);
       });
       spanan.dispatch({
         uuid: messageId,
-        returnedValue
+        returnedValue,
       });
       return promise;
     });
 
     it('removes callback after being called', function () {
       let messageId;
-      const spanan = new Spanan(({ uuid }) => messageId = uuid);
-      const promise = spanan.send();
+      const spanan = new Spanan(({ uuid }) => { messageId = uuid; });
+      spanan.callbacks.set(messageId, () => {});
       expect(spanan.callbacks.has(messageId)).to.equal(true);
       spanan.dispatch({
         uuid: messageId,

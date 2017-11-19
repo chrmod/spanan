@@ -1,0 +1,40 @@
+{
+  "extends": [
+    "airbnb"
+  ],
+  "rules": {
+    "import/extensions": "off",
+    "import/no-unresolved": "off"
+  },
+  "overrides": [
+    {
+      "files": [ "tests/browser/**/*.js" ],
+      "env": {
+        "browser": true
+      }
+    },
+    {
+      "files": [ "tests/node/**/*.js" ],
+      "env": {
+        "node": true
+      }
+    },
+    {
+      "files": [ "tests/**/*.js" ],
+      "env": {
+        "mocha": true,
+      },
+      "plugins": [
+        "mocha",
+        "chai-expect"
+      ],
+      "rules": {
+        "func-names": "off",
+        "prefer-arrow-callback": "off",
+        "no-unused-expressions": "off",
+        "chai-expect/missing-assertion": 2,
+        "chai-expect/terminating-properties": 1
+      }
+    }
+  ]
+}
