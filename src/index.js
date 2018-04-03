@@ -1,15 +1,6 @@
 import Server from './server';
 import UUID from './uuid';
-
-let listeners = [];
-
-const addListener = (listener) => {
-  listeners.push(listener);
-};
-
-const removeListeners = (listener) => {
-  listeners = listeners.filter(d => d !== listener);
-};
+import { has } from './helpers';
 
 // eslint-disable-next-line
 const getDefaultLogger = () => console.error.bind(console);
@@ -19,16 +10,16 @@ export default class Spanan {
     this.sendFunction = sendFunction;
     this.callbacks = new Map();
     this.errorLogger = errorLogger || getDefaultLogger();
-    addListener(this);
+    this.listeners = [this];
   }
 
-  send(functionName, ...args) {
+  send(action, ...args) {
     let resolver;
     const id = UUID();
     const promise = new Promise((resolve) => { resolver = resolve; });
     this.callbacks.set(id, (...argList) => resolver(...argList));
     this.sendFunction({
-      functionName,
+      action,
       args,
       uuid: id,
     });
@@ -43,19 +34,25 @@ export default class Spanan {
     });
   }
 
-  dispatch({ uuid, returnedValue } = {}) {
-    const callback = this.callbacks.get(uuid);
-    if (!callback) {
+  dispatch(message = {}) {
+    const callback = this.callbacks.get(message.uuid);
+    if (
+      !callback ||
+      (
+        callback &&
+        !has(message, 'response')
+      )
+    ) {
       return false;
     }
 
-    callback(returnedValue);
-    this.callbacks.delete(uuid);
+    callback(message.response);
+    this.callbacks.delete(message.uuid);
     return true;
   }
 
-  static dispatch(message) {
-    return listeners.some((listener) => {
+  handleMessage(message) {
+    return this.listeners.some((listener) => {
       try {
         return listener.dispatch(message);
       } catch (e) {
@@ -65,7 +62,7 @@ export default class Spanan {
     });
   }
 
-  static export(
+  export(
     actions,
     {
       filter,
@@ -81,16 +78,16 @@ export default class Spanan {
       transform,
       errorLogger: errorLogger || getDefaultLogger(),
       onTerminate: () => {
-        removeListeners(server);
+        this.listeners = this.listeners.filter(listener => listener !== server);
       },
     });
 
-    addListener(server);
+    this.listeners.push(server);
 
     return server;
   }
 
-  static reset() {
-    listeners = [];
+  reset() {
+    this.listeners = [];
   }
 }

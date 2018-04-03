@@ -1,4 +1,4 @@
-const has = (o, p) => Object.prototype.hasOwnProperty.call(o, p);
+import { has } from './helpers';
 
 export default class {
   constructor({
