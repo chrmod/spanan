@@ -24,8 +24,8 @@ describe('Spanan', function () {
   });
 
 
-  describe('.send', function () {
-    it('calls .sendFunction', function () {
+  describe('#send', function () {
+    it('calls #sendFunction', function () {
       const spy = sinon.spy();
       const spanan = new Spanan();
       const functionName = 'test';
@@ -66,7 +66,7 @@ describe('Spanan', function () {
     });
   });
 
-  describe('.dispatch', function () {
+  describe('#dispatch', function () {
     it('returns false if there was no callback for given message id', function () {
       const spanan = new Spanan();
       expect(spanan.dispatch()).to.equal(false);
@@ -105,7 +105,7 @@ describe('Spanan', function () {
     });
   });
 
-  describe('.createProxy', function () {
+  describe('#createProxy', function () {
     it('calling whatever method on proxy calls .send', function () {
       const spy = sinon.spy();
       const spanan = new Spanan();
@@ -117,6 +117,45 @@ describe('Spanan', function () {
       subject.echo(1);
       subject.someMethod('1', '2');
       expect(spy).to.have.callCount(3);
+    });
+  });
+
+  describe('.dispatch', function () {
+    context('with default logger', function () {
+      beforeEach(function () {
+        sinon.spy(console, 'error');
+      });
+
+      afterEach(function () {
+        // eslint-disable-next-line
+        console.error.restore();
+      });
+
+      it('logs errors', function () {
+        let messageId;
+        const spanan = new Spanan(({ uuid }) => { messageId = uuid; });
+        spanan.callbacks.set(messageId, () => { throw new Error(); });
+        Spanan.dispatch({
+          uuid: messageId,
+        });
+        // eslint-disable-next-line
+        expect(console.error).to.be.called;
+      });
+    });
+
+    context('with custom logger', function () {
+      it('logs errors', function () {
+        const logger = sinon.spy();
+        let messageId;
+        const spanan = new Spanan(({ uuid }) => { messageId = uuid; }, {
+          errorLogger: logger,
+        });
+        spanan.callbacks.set(messageId, () => { throw new Error(); });
+        Spanan.dispatch({
+          uuid: messageId,
+        });
+        expect(logger).to.be.called;
+      });
     });
   });
 });

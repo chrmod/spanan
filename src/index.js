@@ -1,21 +1,25 @@
 import Server from './server';
 import UUID from './uuid';
 
-let dispatchers = [];
+let listeners = [];
 
-const addDispatcher = (dispatcher) => {
-  dispatchers.push(dispatcher);
+const addListener = (listener) => {
+  listeners.push(listener);
 };
 
-const removeDispatcher = (dispatcher) => {
-  dispatchers = dispatchers.filter(d => d !== dispatcher);
+const removeListeners = (listener) => {
+  listeners = listeners.filter(d => d !== listener);
 };
+
+// eslint-disable-next-line
+const getDefaultLogger = () => console.error.bind(console);
 
 export default class Spanan {
-  constructor(sendFunction) {
+  constructor(sendFunction, { errorLogger } = {}) {
     this.sendFunction = sendFunction;
     this.callbacks = new Map();
-    addDispatcher(this.dispatch.bind(this));
+    this.errorLogger = errorLogger || getDefaultLogger();
+    addListener(this);
   }
 
   send(functionName, ...args) {
@@ -51,14 +55,11 @@ export default class Spanan {
   }
 
   static dispatch(message) {
-    return dispatchers.some((dispatcher) => {
+    return listeners.some((listener) => {
       try {
-        return dispatcher(message);
+        return listener.dispatch(message);
       } catch (e) {
-        /* eslint-disable */
-        // TODO: introduce a custom logger
-        console.error('Spanan dispatch error', e);
-        /* eslint-enable */
+        listener.errorLogger('Spanan dispatch error', e);
         return false;
       }
     });
@@ -70,6 +71,7 @@ export default class Spanan {
       filter,
       transform,
       respond,
+      errorLogger,
     } = {},
   ) {
     const server = new Server({
@@ -77,17 +79,18 @@ export default class Spanan {
       respond,
       filter,
       transform,
+      errorLogger: errorLogger || getDefaultLogger(),
       onTerminate: () => {
-        removeDispatcher(server.dispatch);
+        removeListeners(server);
       },
     });
 
-    addDispatcher(server.dispatch);
+    addListener(server);
 
     return server;
   }
 
   static reset() {
-    dispatchers = [];
+    listeners = [];
   }
 }
