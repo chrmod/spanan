@@ -10,6 +10,10 @@
     "prepublish": "npm run build",
     "prebuild": "npm run test"
   },
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/chrmod/spanan.git"
+  },
   "main": "dist/index.js",
   "browser": "dist/index.browser.js",
   "files": [
