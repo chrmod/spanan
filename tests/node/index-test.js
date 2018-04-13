@@ -24,17 +24,17 @@ describe('Spanan', function () {
   });
 
 
-  describe('.send', function () {
-    it('calls .sendFunction', function () {
+  describe('#send', function () {
+    it('calls #sendFunction', function () {
       const spy = sinon.spy();
       const spanan = new Spanan();
-      const functionName = 'test';
+      const action = 'test';
       const args = [1, 2, 3];
       spanan.sendFunction = spy;
 
-      spanan.send(functionName, ...args);
+      spanan.send(action, ...args);
 
-      expect(spy).to.have.been.calledWithMatch(sinon.match({ functionName, args }));
+      expect(spy).to.have.been.calledWithMatch(sinon.match({ action, args }));
       expect(spy).to.have.been.calledWithMatch(sinon.match.has('uuid'));
     });
 
@@ -62,11 +62,11 @@ describe('Spanan', function () {
       const promise = spanan.send();
       const value = 'test';
       spanan.callbacks.get(callbackId)(value);
-      return promise.then(returnedValue => expect(returnedValue).to.equal(value));
+      return promise.then(response => expect(response).to.equal(value));
     });
   });
 
-  describe('.dispatch', function () {
+  describe('#dispatch', function () {
     it('returns false if there was no callback for given message id', function () {
       const spanan = new Spanan();
       expect(spanan.dispatch()).to.equal(false);
@@ -76,19 +76,22 @@ describe('Spanan', function () {
       let messageId;
       const spanan = new Spanan(({ uuid }) => { messageId = uuid; });
       spanan.send();
-      expect(spanan.dispatch({ uuid: messageId })).to.equal(true);
+      expect(spanan.dispatch({
+        uuid: messageId,
+        response: null,
+      })).to.equal(true);
     });
 
-    it('calls callback with message returnedValue', function () {
+    it('calls callback with message response', function () {
       let messageId;
-      const returnedValue = 'test';
+      const response = 'test';
       const spanan = new Spanan(({ uuid }) => { messageId = uuid; });
       const promise = spanan.send().then((value) => {
-        expect(value).to.equal(returnedValue);
+        expect(value).to.equal(response);
       });
       spanan.dispatch({
         uuid: messageId,
-        returnedValue,
+        response,
       });
       return promise;
     });
@@ -100,12 +103,13 @@ describe('Spanan', function () {
       expect(spanan.callbacks.has(messageId)).to.equal(true);
       spanan.dispatch({
         uuid: messageId,
+        response: undefined,
       });
       expect(spanan.callbacks.has(messageId)).to.equal(false);
     });
   });
 
-  describe('.createProxy', function () {
+  describe('#createProxy', function () {
     it('calling whatever method on proxy calls .send', function () {
       const spy = sinon.spy();
       const spanan = new Spanan();
@@ -117,6 +121,47 @@ describe('Spanan', function () {
       subject.echo(1);
       subject.someMethod('1', '2');
       expect(spy).to.have.callCount(3);
+    });
+  });
+
+  describe('#handleMessage', function () {
+    context('with default logger', function () {
+      beforeEach(function () {
+        sinon.spy(console, 'error');
+      });
+
+      afterEach(function () {
+        // eslint-disable-next-line
+        console.error.restore();
+      });
+
+      it('logs errors', function () {
+        let messageId;
+        const spanan = new Spanan(({ uuid }) => { messageId = uuid; });
+        spanan.callbacks.set(messageId, () => { throw new Error(); });
+        spanan.handleMessage({
+          uuid: messageId,
+          response: 0,
+        });
+        // eslint-disable-next-line
+        expect(console.error).to.be.called;
+      });
+    });
+
+    context('with custom logger', function () {
+      it('logs errors', function () {
+        const logger = sinon.spy();
+        let messageId;
+        const spanan = new Spanan(({ uuid }) => { messageId = uuid; }, {
+          errorLogger: logger,
+        });
+        spanan.callbacks.set(messageId, () => { throw new Error(); });
+        spanan.handleMessage({
+          uuid: messageId,
+          response: '',
+        });
+        expect(logger).to.be.called;
+      });
     });
   });
 });

@@ -1,30 +1,25 @@
 import Server from './server';
 import UUID from './uuid';
+import { has } from './helpers';
 
-let dispatchers = [];
-
-const addDispatcher = (dispatcher) => {
-  dispatchers.push(dispatcher);
-};
-
-const removeDispatcher = (dispatcher) => {
-  dispatchers = dispatchers.filter(d => d !== dispatcher);
-};
+// eslint-disable-next-line
+const getDefaultLogger = () => console.error.bind(console);
 
 export default class Spanan {
-  constructor(sendFunction) {
+  constructor(sendFunction, { errorLogger } = {}) {
     this.sendFunction = sendFunction;
     this.callbacks = new Map();
-    addDispatcher(this.dispatch.bind(this));
+    this.errorLogger = errorLogger || getDefaultLogger();
+    this.listeners = [this];
   }
 
-  send(functionName, ...args) {
+  send(action, ...args) {
     let resolver;
     const id = UUID();
     const promise = new Promise((resolve) => { resolver = resolve; });
     this.callbacks.set(id, (...argList) => resolver(...argList));
     this.sendFunction({
-      functionName,
+      action,
       args,
       uuid: id,
     });
@@ -39,37 +34,41 @@ export default class Spanan {
     });
   }
 
-  dispatch({ uuid, returnedValue } = {}) {
-    const callback = this.callbacks.get(uuid);
-    if (!callback) {
+  dispatch(message = {}) {
+    const callback = this.callbacks.get(message.uuid);
+    if (
+      !callback ||
+      (
+        callback &&
+        !has(message, 'response')
+      )
+    ) {
       return false;
     }
 
-    callback(returnedValue);
-    this.callbacks.delete(uuid);
+    callback(message.response);
+    this.callbacks.delete(message.uuid);
     return true;
   }
 
-  static dispatch(message) {
-    return dispatchers.some((dispatcher) => {
+  handleMessage(message) {
+    return this.listeners.some((listener) => {
       try {
-        return dispatcher(message);
+        return listener.dispatch(message);
       } catch (e) {
-        /* eslint-disable */
-        // TODO: introduce a custom logger
-        console.error('Spanan dispatch error', e);
-        /* eslint-enable */
+        listener.errorLogger('Spanan dispatch error', e);
         return false;
       }
     });
   }
 
-  static export(
+  export(
     actions,
     {
       filter,
       transform,
       respond,
+      errorLogger,
     } = {},
   ) {
     const server = new Server({
@@ -77,17 +76,18 @@ export default class Spanan {
       respond,
       filter,
       transform,
+      errorLogger: errorLogger || getDefaultLogger(),
       onTerminate: () => {
-        removeDispatcher(server.dispatch);
+        this.listeners = this.listeners.filter(listener => listener !== server);
       },
     });
 
-    addDispatcher(server.dispatch);
+    this.listeners.push(server);
 
     return server;
   }
 
-  static reset() {
-    dispatchers = [];
+  reset() {
+    this.listeners = [];
   }
 }

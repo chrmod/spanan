@@ -5,67 +5,73 @@ import SpananServer from '../../server';
 const message = { action: 'echo' };
 
 describe('Export', function () {
-  afterEach(function () {
-    Spanan.reset();
+  let spanan;
+
+  beforeEach(function () {
+    spanan = new Spanan();
   });
 
-  describe('Spanan.dispatch', function () {
+  afterEach(function () {
+    spanan.reset();
+  });
+
+  describe('spanan.dispatch', function () {
     context('with export defined', function () {
       context('and message that matches export', function () {
         it('if export does not throw it returns true', function () {
-          Spanan.export({
+          spanan.export({
             echo() {},
           });
-          expect(Spanan.dispatch(message)).to.equal(true);
+          expect(spanan.handleMessage(message)).to.equal(true);
         });
 
         it('if export does throw it returns false', function () {
-          Spanan.export({
+          spanan.export({
             echo() { throw new Error('error'); },
           });
-          expect(Spanan.dispatch(message)).to.equal(false);
+          expect(spanan.handleMessage(message)).to.equal(false);
         });
       });
     });
 
     context('with no exports defined', function () {
       it('return false', function () {
-        expect(Spanan.dispatch(message)).to.equal(false);
+        expect(spanan.handleMessage(message)).to.equal(false);
       });
     });
 
     context('with at least one matching export that does not throw', function () {
       beforeEach(function () {
-        Spanan.export({
+        spanan.export({
           echo() { throw new Error('error'); },
         });
-        Spanan.export({
+        spanan.export({
           echo() {},
         });
       });
 
       it('return true', function () {
-        expect(Spanan.dispatch(message)).to.equal(true);
+        expect(spanan.handleMessage(message)).to.equal(true);
       });
     });
   });
 
-  describe('Spanan.export', function () {
+  describe('spanan.export', function () {
     it('returns serve object', function () {
-      expect(Spanan.export({})).to.be.instanceof(SpananServer);
+      expect(spanan.export({})).to.be.instanceof(SpananServer);
     });
 
     context('after calling terminate on server', function () {
       it('does not respond', function (done) {
         this.timeout(50);
         setTimeout(done, 30);
-        const server = Spanan.export({
+        const server = spanan.export({
           echo() {
             done('should not happen');
           },
         });
         server.terminate();
-        Spanan.dispatch(message);
+        spanan.handleMessage(message);
       });
     });
 
@@ -73,20 +79,20 @@ describe('Export', function () {
       it('does not respond', function (done) {
         this.timeout(50);
         setTimeout(done, 30);
-        Spanan.export({
+        spanan.export({
           echo() {
             done('should not happen');
           },
         }, {
           filter() { return false; },
         });
-        Spanan.dispatch(message);
+        spanan.handleMessage(message);
       });
     });
 
     context('on unmatching message and matching transform', function () {
       it('does call function', function (done) {
-        Spanan.export({
+        spanan.export({
           echo() {
             done();
           },
@@ -97,13 +103,13 @@ describe('Export', function () {
             };
           },
         });
-        Spanan.dispatch({
+        spanan.handleMessage({
           fn: message.action,
         });
       });
 
       it('does respond', function (done) {
-        Spanan.export({
+        spanan.export({
           echo() {},
         }, {
           transform(request) {
@@ -115,7 +121,7 @@ describe('Export', function () {
             done();
           },
         });
-        Spanan.dispatch({
+        spanan.handleMessage({
           fn: message.action,
         });
       });

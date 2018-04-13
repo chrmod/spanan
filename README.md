@@ -21,7 +21,7 @@ Spanan will send a message to iframe in a form:
 
 ```json
 {
-  "functionName": "echo",
+  "action": "echo",
   "args": [ 1 ],
   "uuid": <some uuid>
 }
@@ -34,7 +34,7 @@ iframe.contentWindow.addEventListener('message', (event) => {
   const message = JSON.parse(event.data);
   iframeWrapper.dispatch({
     uuid: message.responseId,
-    returnedValue: message.response,
+    response: message.response,
   });
 });
 ```
@@ -52,15 +52,16 @@ const action = {
 ```
 
 Spanan can automatically respond to upcoming messages that matches the desired
-shape. By default upcoming messages must have 3 properties: `udid`, `action` and `args`.
+shape. By default upcoming messages must have 3 properties: `uuid`, `action` and `args`.
 
 ```js
-Spanan.export(actions, {
+const spanan = new Spanan();
+spanan.export(actions, {
   respond(response, request) {
     window.postMessage(JSON.stringify({
       type: 'response',
-      id: request.udid,
-      returnedValue: response,
+      uuid: request.uuid,
+      response: response,
     }));
   },
 });
@@ -72,7 +73,7 @@ Now, Spanan need to listen to upcoming messages:
 window.addEventListener('message' (ev) => {
   const message = JSON.parse(ev.data);
 
-  Spanan.dispatch(message);
+  spanan.handleMessage(message);
 });
 ```
 

@@ -1,4 +1,4 @@
-const has = (o, p) => Object.prototype.hasOwnProperty.call(o, p);
+import { has } from './helpers';
 
 export default class {
   constructor({
@@ -6,6 +6,7 @@ export default class {
     respond = (/* res, req */) => {},
     filter = () => true,
     transform = r => r,
+    errorLogger,
     onTerminate = () => {},
   } = {}) {
     this.actions = actions;
@@ -14,6 +15,7 @@ export default class {
     this.filter = filter;
     this.transform = transform;
     this.respond = respond;
+    this.errorLogger = errorLogger;
   }
 
   dispatch(request) {
