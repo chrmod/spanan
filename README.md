@@ -1,8 +1,8 @@
 # Spanan [![Build Status](https://travis-ci.org/chrmod/spanan.svg?branch=master)](https://travis-ci.org/chrmod/spanan)
 
 Spanan is simple library for building Promise-based remote function invocation.
-It wraps one way messaging APIs (like window.postMessage) with a Proxy object
-that returns a promise.
+It wraps one way messaging APIs (like window.postMessage, or chrome.runtime.sendMessage)
+with a Proxy object that returns a promise.
 
 # Usage
 
@@ -27,13 +27,13 @@ Spanan will send a message to iframe in a form:
 }
 ```
 
-To resolve `echoPromise`, response must be dispatched on iframeWrapper:
+To resolve `echoPromise`, iframeWrapper must handle the incoming message:
 
 ```
 iframe.contentWindow.addEventListener('message', (event) => {
   const message = JSON.parse(event.data);
-  iframeWrapper.dispatch({
-    uuid: message.responseId,
+  iframeWrapper.handleMessage({
+    uuid: message.uuid,
     response: message.response,
   });
 });
@@ -44,7 +44,7 @@ iframe.contentWindow.addEventListener('message', (event) => {
 Given a object that all own properties are function:
 
 ```js
-const action = {
+const actions = {
   echo(text) {
     return text;
   },
@@ -80,7 +80,7 @@ window.addEventListener('message' (ev) => {
 Second argument for `export` is an options object that can configure default
 Spanan behavior, it has following properties:
 
-* `respond(response, request)` - being called for every messsage that was successfully dispatched
+* `respond(response, request)` - being called for every messsage that was successfully handled
 * `filter(request)` - called for every message, if returns true, the matching action will be called
 * `transform(request)` - called for every positively filtered message. It must return an object with `action` and `args` properties. `action` is being used to match the name of the function that should be called, `args` are the arguments passed to the function.
 
@@ -124,3 +124,40 @@ raureif build
 Before submiting a pull request, please first create an issue describing what
 and why you would like to change. This workflow will ensure the development
 direction.
+
+# Migration from 1.x to 2.x
+
+In Spanan 1.x exposing an API was done with static method  `Spanan.export`, also
+messages were handled with `Spanan.dispatch`. This approach worked well in
+simple scenariors, but fail in cases of multiple exports or more then one import.
+
+In Spanan 2.x those problematic static methods were replaced with instance methods.
+
+Migration should be fairly easy. Lets consider following Spanan 1.x code sample:
+
+```js
+Spanan.export({
+  echo(e) {
+    return e;
+  },
+});
+window.addEventListener('message', (ev) => {
+  const message = JSON.parse(ev.data);
+  Spanan.dispatch(message);
+});
+```
+
+It can be replaced with this 2.x version:
+
+```js
+const api = new Spanan();
+api.export({
+  echo(e) {
+    return e;
+  },
+});
+window.addEventListener('message', (ev) => {
+  const message = JSON.parse(ev.data);
+  api.handleMessage(message);
+});
+```
