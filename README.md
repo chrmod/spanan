@@ -29,7 +29,7 @@ Spanan will send a message to iframe in a form:
 
 To resolve `echoPromise`, iframeWrapper must handle the incoming message:
 
-```
+```js
 iframe.contentWindow.addEventListener('message', (event) => {
   const message = JSON.parse(event.data);
   iframeWrapper.handleMessage({
@@ -69,10 +69,9 @@ spanan.export(actions, {
 
 Now, Spanan need to listen to upcoming messages:
 
-```
+```js
 window.addEventListener('message' (ev) => {
   const message = JSON.parse(ev.data);
-
   spanan.handleMessage(message);
 });
 ```
@@ -160,4 +159,4 @@ window.addEventListener('message', (ev) => {
   const message = JSON.parse(ev.data);
   api.handleMessage(message);
 });
-```
+```[<65;12;29M[<65;12;29M
