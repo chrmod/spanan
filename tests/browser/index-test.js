@@ -75,5 +75,34 @@ describe('in same window', function () {
         expect(response).to.equal('test');
       });
     });
+
+    it('calls and receive error from exported functions', function () {
+      spanan = new Spanan((message) => {
+        window.postMessage({
+          action: message.action,
+          args: message.args,
+          uuid: message.uuid,
+        }, '*');
+      });
+
+      spanan.export({
+        echo() { throw new Error('err'); },
+      }, {
+        respondWithError(error, request) {
+          window.postMessage({
+            uuid: request.uuid,
+            error,
+          }, '*');
+        },
+      });
+
+      onMessage = ev => spanan.handleMessage(ev.data);
+
+      window.addEventListener('message', onMessage);
+
+      return spanan.send('echo', 'test').catch((response) => {
+        expect(response).to.equal('err');
+      });
+    });
   });
 });

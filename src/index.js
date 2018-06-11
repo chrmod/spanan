@@ -15,9 +15,16 @@ export default class Spanan {
 
   send(action, ...args) {
     let resolver;
+    let rejecter;
     const id = UUID();
-    const promise = new Promise((resolve) => { resolver = resolve; });
-    this.callbacks.set(id, (...argList) => resolver(...argList));
+    const promise = new Promise((resolve, reject) => {
+      resolver = resolve;
+      rejecter = reject;
+    });
+    this.callbacks.set(id, {
+      resolver,
+      rejecter,
+    });
     this.sendFunction({
       action,
       args,
@@ -36,17 +43,19 @@ export default class Spanan {
 
   dispatch(message = {}) {
     const callback = this.callbacks.get(message.uuid);
-    if (
-      !callback ||
-      (
-        callback &&
-        !has(message, 'response')
-      )
-    ) {
+
+    if (!callback) {
       return false;
     }
 
-    callback(message.response);
+    if (has(message, 'response')) {
+      callback.resolver(message.response);
+    } else if (has(message, 'error')) {
+      callback.rejecter(message.error);
+    } else {
+      return false;
+    }
+
     this.callbacks.delete(message.uuid);
     return true;
   }
@@ -68,12 +77,14 @@ export default class Spanan {
       filter,
       transform,
       respond,
+      respondWithError,
       errorLogger,
     } = {},
   ) {
     const server = new Server({
       actions,
       respond,
+      respondWithError,
       filter,
       transform,
       errorLogger: errorLogger || getDefaultLogger(),

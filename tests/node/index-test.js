@@ -61,8 +61,17 @@ describe('Spanan', function () {
       const spanan = new Spanan(({ uuid }) => { callbackId = uuid; });
       const promise = spanan.send();
       const value = 'test';
-      spanan.callbacks.get(callbackId)(value);
+      spanan.callbacks.get(callbackId).resolver(value);
       return promise.then(response => expect(response).to.equal(value));
+    });
+
+    it('sets callback that rejects returned promise with a value', function () {
+      let callbackId;
+      const spanan = new Spanan(({ uuid }) => { callbackId = uuid; });
+      const promise = spanan.send();
+      const value = 'test';
+      spanan.callbacks.get(callbackId).rejecter(value);
+      return promise.catch(response => expect(response).to.equal(value));
     });
   });
 
@@ -82,7 +91,7 @@ describe('Spanan', function () {
       })).to.equal(true);
     });
 
-    it('calls callback with message response', function () {
+    it('calls resolving callback with message response', function () {
       let messageId;
       const response = 'test';
       const spanan = new Spanan(({ uuid }) => { messageId = uuid; });
@@ -96,10 +105,24 @@ describe('Spanan', function () {
       return promise;
     });
 
+    it('calls rejecting callback with message error', function () {
+      let messageId;
+      const error = 'err';
+      const spanan = new Spanan(({ uuid }) => { messageId = uuid; });
+      const promise = spanan.send().catch((value) => {
+        expect(value).to.equal(error);
+      });
+      spanan.dispatch({
+        uuid: messageId,
+        error,
+      });
+      return promise;
+    });
+
     it('removes callback after being called', function () {
       let messageId;
       const spanan = new Spanan(({ uuid }) => { messageId = uuid; });
-      spanan.callbacks.set(messageId, () => {});
+      spanan.callbacks.set(messageId, { resolver: () => {} });
       expect(spanan.callbacks.has(messageId)).to.equal(true);
       spanan.dispatch({
         uuid: messageId,
