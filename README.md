@@ -83,6 +83,40 @@ Spanan behavior, it has following properties:
 * `filter(request)` - called for every message, if returns true, the matching action will be called
 * `transform(request)` - called for every positively filtered message. It must return an object with `action` and `args` properties. `action` is being used to match the name of the function that should be called, `args` are the arguments passed to the function.
 
+## Handling errors
+
+Similarly to the way successful calls are handles, if a server action handler
+throws, a message can be send.
+
+```js
+spanan.export(actions, {
+  respondWithError(error, request) {
+    window.postMessage(JSON.stringify({
+      type: 'response',
+      uuid: request.uuid,
+      error: response,
+    }));
+  },
+});
+```
+
+On a client side, the message containg the error is handled in a same way as
+normal response is, with the difference that `response` propery is replaced with
+`error` property.
+
+```js
+window.addEventListener('message' (ev) => {
+  const message = JSON.parse(ev.data);
+  spanan.handleMessage({
+    uuid: message.uuid,
+    error: message.error,
+  });
+});
+```
+
+Note that if the message passed to `handleMessage` has both `response` and `error`
+properties the `response` will take precedence.
+
 # Requirements
 
 Spanan uses Javascript Proxy API so require will work in Firefox >= 40 or

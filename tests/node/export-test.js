@@ -29,7 +29,7 @@ describe('Export', function () {
           spanan.export({
             echo() { throw new Error('error'); },
           });
-          expect(spanan.handleMessage(message)).to.equal(false);
+          expect(spanan.handleMessage(message)).to.equal(true);
         });
       });
     });
@@ -40,18 +40,43 @@ describe('Export', function () {
       });
     });
 
-    context('with at least one matching export that does not throw', function () {
+    context('with matching export that throws', function () {
+      let api;
+      let errorCallback;
+
       beforeEach(function () {
-        spanan.export({
+        api = spanan.export({
           echo() { throw new Error('error'); },
-        });
-        spanan.export({
-          echo() {},
+        }, {
+          respondWithError() {
+            errorCallback();
+          },
         });
       });
 
-      it('return true', function () {
-        expect(spanan.handleMessage(message)).to.equal(true);
+      it('calls respondWithError callback', function (done) {
+        errorCallback = done;
+        api.dispatch(message);
+      });
+    });
+
+    context('with matching export that return promise which rejects', function () {
+      let api;
+      let errorCallback;
+
+      beforeEach(function () {
+        api = spanan.export({
+          echo() { return Promise.reject(); },
+        }, {
+          respondWithError() {
+            errorCallback();
+          },
+        });
+      });
+
+      it('calls respondWithError callback', function (done) {
+        errorCallback = done;
+        api.dispatch(message);
       });
     });
   });
