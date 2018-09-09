@@ -22,13 +22,17 @@ export default class {
 
   dispatch(request) {
     if (!this.filter || !this.filter(request)) {
-      return false;
+      return {
+        handled: false,
+      };
     }
 
     const { args = [], action } = this.transform(request);
 
     if (!has(this.actions, action)) {
-      return false;
+      return {
+        handled: false,
+      };
     }
 
     let res;
@@ -36,8 +40,12 @@ export default class {
     try {
       res = this.actions[action](...args);
     } catch (e) {
+      this.errorLogger(`Spanan dispatch error in action "${action}"`, e);
       this.respondWithError(e.message, request);
-      return true;
+      return {
+        response: Promise.reject(e),
+        handled: true,
+      };
     }
 
     if (!(res instanceof Promise)) {
@@ -46,10 +54,16 @@ export default class {
 
     res.then(
       response => this.respond(response, request),
-      error => this.respondWithError(error, request),
+      (error) => {
+        this.errorLogger(`Spanan dispatch error in action "${action}"`, error);
+        this.respondWithError(error, request);
+      },
     );
 
-    return true;
+    return {
+      response: res,
+      handled: true,
+    };
   }
 
   terminate() {
