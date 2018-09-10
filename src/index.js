@@ -45,7 +45,9 @@ export default class Spanan {
     const callback = this.callbacks.get(message.uuid);
 
     if (!callback) {
-      return false;
+      return {
+        handled: false,
+      };
     }
 
     if (has(message, 'response')) {
@@ -53,17 +55,21 @@ export default class Spanan {
     } else if (has(message, 'error')) {
       callback.rejecter(message.error);
     } else {
-      return false;
+      return {
+        handled: false,
+      };
     }
 
     this.callbacks.delete(message.uuid);
-    return true;
+    return {
+      handled: true,
+    };
   }
 
   handleMessage(message) {
     return this.listeners.some((listener) => {
       try {
-        return listener.dispatch(message);
+        return listener.dispatch(message).handled;
       } catch (e) {
         listener.errorLogger('Spanan dispatch error', e);
         return false;

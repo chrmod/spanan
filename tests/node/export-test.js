@@ -1,6 +1,11 @@
-import { expect } from 'chai';
+import chai, { expect } from 'chai';
+import sinon from 'sinon';
+import sinonChai from 'sinon-chai';
+
 import Spanan from '../../index';
 import SpananServer from '../../server';
+
+chai.use(sinonChai);
 
 const message = { action: 'echo' };
 
@@ -42,41 +47,73 @@ describe('Export', function () {
 
     context('with matching export that throws', function () {
       let api;
+      let logger;
       let errorCallback;
 
       beforeEach(function () {
+        logger = () => {};
         api = spanan.export({
           echo() { throw new Error('error'); },
         }, {
+          errorLogger() {
+            logger();
+          },
           respondWithError() {
-            errorCallback();
+            errorCallback && errorCallback();
           },
         });
+      });
+
+      afterEach(function () {
+        errorCallback = null;
       });
 
       it('calls respondWithError callback', function (done) {
         errorCallback = done;
         api.dispatch(message);
+      });
+
+      it('calls custom error logger', function () {
+        logger = sinon.spy();
+        return api.dispatch(message).response.catch(() => {
+          expect(logger).to.be.called;
+        });
       });
     });
 
     context('with matching export that return promise which rejects', function () {
       let api;
+      let logger;
       let errorCallback;
 
       beforeEach(function () {
+        logger = () => {};
         api = spanan.export({
           echo() { return Promise.reject(); },
         }, {
+          errorLogger() {
+            logger();
+          },
           respondWithError() {
             errorCallback();
           },
         });
       });
 
+      afterEach(function () {
+        errorCallback = null;
+      });
+
       it('calls respondWithError callback', function (done) {
         errorCallback = done;
         api.dispatch(message);
+      });
+
+      it('calls custom error logger', function () {
+        logger = sinon.spy();
+        return api.dispatch(message).response.catch(() => {
+          expect(logger).to.be.called;
+        });
       });
     });
   });

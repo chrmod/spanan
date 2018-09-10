@@ -78,7 +78,7 @@ describe('Spanan', function () {
   describe('#dispatch', function () {
     it('returns false if there was no callback for given message id', function () {
       const spanan = new Spanan();
-      expect(spanan.dispatch()).to.equal(false);
+      expect(spanan.dispatch()).to.have.property('handled').equal(false);
     });
 
     it('returns true if there was a callback pending', function () {
@@ -88,7 +88,7 @@ describe('Spanan', function () {
       expect(spanan.dispatch({
         uuid: messageId,
         response: null,
-      })).to.equal(true);
+      })).to.have.property('handled').that.equal(true);
     });
 
     it('calls resolving callback with message response', function () {
